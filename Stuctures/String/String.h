@@ -16,15 +16,17 @@ class String{
     String(const char* string);
     String(const String& other);
     String& operator=(const String& other);
+    String(String&& other) noexcept;          
+    String& operator=(String&& other) noexcept;
     ~String(); 
     
     const char* c_str() const;
-    String& operator+=(const String& other);/*to be done*/
+    String& operator+=(const String& other);
     size_t getSize() const;
     size_t getCapacity() const;
     char& operator[](unsigned index);
     const char& operator[] (unsigned index) const;
-    String substr(unsigned start, unsigned length);/*to be done*/
+    String substr(unsigned start, unsigned length);
 
 
     friend String operator+(const String& str1, const String& str2);
