@@ -105,7 +105,10 @@
         return is;
 
     }
-
+    String String::toString() const {
+        return String(data);
+    }
+    
     bool operator==(const String& lhs, const String& rhs) {return strcmp(lhs.c_str(), rhs.c_str()) == 0;}
     bool operator!=(const String& lhs, const String& rhs) {return !(lhs == rhs);}
     bool operator>(const String& lhs, const String& rhs)  {return strcmp(lhs.c_str(), rhs.c_str()) > 0;}

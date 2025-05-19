@@ -32,8 +32,7 @@ class String{
     friend String operator+(const String& str1, const String& str2);
     friend std::ostream& operator<<(std::ostream& os, const String& string);
     friend std::istream& operator>>(std::istream& is, String& string);
-
-
+    String toString() const;
     
 };
 
