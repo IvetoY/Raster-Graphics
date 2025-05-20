@@ -11,7 +11,7 @@ class Image{
     String magicNumber;
     String fileName;
     std::vector<std::vector<Pixel>> pixels;
-    //Vector<?> awaitingTransformations;
+
     public:
     Image();
     Image(unsigned _w, unsigned _h, uint8_t _m, const  String& _mN,const String& _fN, std::vector<std::vector<Pixel>> _p); //add vector for transformations
@@ -28,7 +28,11 @@ class Image{
     const Pixel& at(unsigned x, unsigned y) const;
 
     void print(std::ostream& os) const;
-    
+
+
+    uint8_t getMaxColorNumbers() const {return maxColourNumbers;}
+    const String& getMagicNumber() const {return magicNumber;}
+
 
 };
 
