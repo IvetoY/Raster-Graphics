@@ -4,6 +4,7 @@ Image::Image() : width(0), height(0), maxColourNumbers(0), magicNumber(new char[
     magicNumber[0] = '\0';
     fileName[0] = '\0';
 }
+
 Image::Image(unsigned _w, unsigned _h, uint8_t _m,const String& _mN, const String& _fN, std::vector<std::vector<Pixel>> _p) : width(_w), height(_h), maxColourNumbers(_m), magicNumber(_mN), fileName(_fN), pixels(_p) {}
 Image::Image(const Image& other) : width(other.width), height(other.height),maxColourNumbers(other.maxColourNumbers), magicNumber(other.magicNumber), fileName(other.fileName), pixels(other.pixels) {}
 unsigned Image::getHeight() const {return height;}
@@ -35,3 +36,4 @@ const Pixel& Image::at(unsigned x, unsigned y) const {
 void Image::print(std::ostream& os) const{
     os<<fileName<<std::endl;
 }
+
