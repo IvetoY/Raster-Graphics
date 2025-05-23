@@ -37,3 +37,5 @@ void Image::print(std::ostream& os) const{
     os<<fileName<<std::endl;
 }
 
+
+

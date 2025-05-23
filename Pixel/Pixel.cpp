@@ -24,3 +24,12 @@ bool Pixel::operator==(const Pixel& other) const{
 bool Pixel::operator!=(const Pixel& other) const{
     return red != other.red || green != other.green || blue != other.blue;
 }
+
+Pixel& Pixel::operator=(const Pixel& other){
+    if (this != &other) {
+        red = other.red;
+        green = other.green;
+        blue = other.blue;
+    }
+    return *this;
+}

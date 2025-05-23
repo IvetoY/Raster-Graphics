@@ -31,7 +31,8 @@ void Rotate::apply(Image& image) const {
             }
         }
     }
-    image = Image (newWidth, newHeight, image.getMaxColorNumbers(), image.getMagicNumber(), image.getFileName(), rotatedImage );
+    //otdelno za trite vida trqbva da se napravi
+    //image = PPM(newWidth, newHeight, image.getMaxColorNumbers(), image.getMagicNumber(), image.getFileName(), rotatedImage );
 
 }
 

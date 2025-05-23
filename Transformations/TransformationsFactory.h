@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 #include "Transformations.h"
 #include "../String/String.h"
 #include "Grayscale.h"
@@ -10,12 +9,13 @@
 
 class TransformationsFactory{
 public:
-static std::unique_ptr<Transformations> create(const String& name){
-    if(name == "grayscale") {return std::make_unique<Grayscale>();}
-    if(name == "monochrome") {return std::make_unique<Monochrome>();}
-    if(name == "rotate_left") {return std::make_unique<Rotate>(Rotate::left);}
-    if(name == "rotate_right") {return std::make_unique<Rotate>(Rotate::right);}
-    if(name == "negative") {return std::make_unique<Negative>();}
+static Transformations* create(const String& name){
+    if(name == "grayscale") {return new Grayscale();}
+    if(name == "monochrome") {return new Monochrome();}
+    if(name == "rotate_left") {return new Rotate(Rotate::left);}
+    if(name == "rotate_right") {return new Rotate(Rotate::right);}
+    if(name == "negative") {return new Negative();}
     throw std::invalid_argument(std::string("Unknown transformation: ") + name.c_str());
 }
+~TransformationsFactory(){}
 };

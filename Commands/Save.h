@@ -6,7 +6,7 @@ class Save: public Commands{
     String filePath;
     size_t imageId;
     public:
-    Save(const String& _path, size_t _id) : filePath(_path), imageId(_id){}
+    Save(const String& _path, size_t _id);
 
     void apply(Session& session) override;
     void undo(Session& session) override{}

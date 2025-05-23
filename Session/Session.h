@@ -8,8 +8,8 @@
 class Session{
 private:
 int id;
-std::vector<std::unique_ptr<Image>> images;
-std::vector<std::unique_ptr<Transformations>> pendingTransformations;
+std::vector<Image*> images;
+std::vector<Transformations*> pendingTransformations;
 std::stack<Image*> history;
 bool active = true;
 public:
@@ -17,8 +17,8 @@ public:
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;
     ~Session() = default;
-    void addImage(std::unique_ptr<Image> image);
-    void addTransformation(std::unique_ptr<Transformations> transform);
+    void addImage(Image* image);
+    void addTransformation(Transformations* transform);
     void applyTransformations();
 
     void loadImage(const String& filename);
@@ -30,6 +30,6 @@ public:
     void undo();
 
     int getId() const;
-    const std::vector<std::unique_ptr<Image>>& getImages() const;
-    const std::vector<std::unique_ptr<Transformations>>& getPendingTransformations() const;
+    const std::vector<Image*>& getImages() const;
+    const std::vector<Transformations*>& getPendingTransformations() const;
 };

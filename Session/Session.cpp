@@ -1,11 +1,11 @@
 #include "Session.h"
 #include <stdexcept>
 Session::Session(int _id) : id(_id) {}
-void Session::addImage(std::unique_ptr<Image> image){
+void Session::addImage(Image* image){
     images.push_back(std::move(image));
 }
 
-void Session::addTransformation(std::unique_ptr<Transformations> transformation){
+void Session::addTransformation(Transformations* transformation){
     pendingTransformations.push_back(std::move(transformation));
 }
 void Session::applyTransformations(){
@@ -20,8 +20,8 @@ void Session::applyTransformations(){
     pendingTransformations.clear();
 }
 int Session::getId() const{return id;}
-const std::vector<std::unique_ptr<Image>>& Session::getImages() const {return images;}
-const std::vector<std::unique_ptr<Transformations>>& Session::getPendingTransformations() const {
+const std::vector<Image*>& Session::getImages() const {return images;}
+const std::vector<Transformations*>& Session::getPendingTransformations() const {
     return pendingTransformations;
 }
 void Session::undo(){
@@ -41,8 +41,8 @@ Session::~Session() {
 }
 bool Session::isActive() const{return active;}
 void Session::terminate(){active = false;}
-/*void Session::saveImage(const String& filePath){
+void Session::saveImage(const String& filePath){
     if(images.empty()){throw std::runtime_error("No images to save");}
     
-}*/
+}
 

@@ -15,6 +15,7 @@ public:
     void setBlue(uint8_t value);
     void setRGB(uint8_t red, uint8_t green, uint8_t blue);
 
+    Pixel& operator=(const Pixel& other);
     bool operator==(const Pixel& other) const;
     bool operator!=(const Pixel& other) const;
 };

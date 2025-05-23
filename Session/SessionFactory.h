@@ -4,7 +4,7 @@
 
 class SessionFactory{
 public:
-static std::unique_ptr<Session> createSession(int id) {
-    return std::make_unique<Session>(id);
+static Session* createSession(int id) {
+    return new Session(id);
 }
 };
