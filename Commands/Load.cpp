@@ -1,15 +1,9 @@
 #include "Load.h"
-#include "../Session/Session.h"
-#include "../Image/ImageFactory.h"
-
-void Load::apply(Session& session){
-    auto image = ImageFactory::create(filePath);
-    if(!image){
-        throw std::runtime_error("Failed to load image");
-    }
-    session.addImage(std::move(image));
+#include "../System/System.h"
+#include <vector>
+Load::Load(std::vector<String>&& files) : files(std::move(files)){}
+Load::Load(const std::vector<String>& files) : files(files){}
+void Load::apply(System& system) const {
+    system.loadSession(this->files);
 }
-
-void Load::undo(Session& session){
-    /*to be done*/
-}
+Commands* Load::clone() const{return new Load(*this);}

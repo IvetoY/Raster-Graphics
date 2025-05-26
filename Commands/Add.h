@@ -1,18 +1,16 @@
 #pragma once
-#include "Commands.h"
-#include <memory>
-#include "../Image/Image.h"
+#include "../Commands/Commands.h"
+#include "../Structures/String/String.h"
+#include "../System/System.h"
 class Add: public Commands{
-    Image* image;
+    private:
+    String filename;
 public:
-    explicit Add(Image* img);
-    Add(const Add&) = delete;
-    Add& operator=(const Add&) = delete;
-    void apply(Session& session) override;
-    void undo(Session& session) override;
+    Add(const String& filename);
+    Add(String&& filename);
+    void apply(System& system) const override;
+    Commands* clone() const override;
     String getCommandName() const override {return "add";}
     String getCommandDescription() const override {return "Adds a new image to session";}
-    ~Add() override{
-        delete image;
-    }
+    
 };

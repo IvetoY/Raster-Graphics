@@ -1,4 +1,7 @@
 #include "Rotate.h"
+#include "../Image/PBM.h"
+#include "../Image/PPM.h"
+#include "../Image/PGM.h"
 #include <algorithm>
 #include <stdexcept>
 Rotate::Rotate(Direction _d) : direction(_d) {
@@ -8,32 +11,29 @@ Rotate::Rotate(Direction _d) : direction(_d) {
 }
 
 void Rotate::apply(Image& image) const {
-    if(direction!=left && direction!=right){
-        throw std::runtime_error("Corrupted rotation direction");
+    if (direction != left && direction != right) {
+        throw std::runtime_error("Invalid rotation direction");
     }
 
-    std::vector<std::vector<Pixel>> rotatedImage;
-    unsigned newWidth = image.getHeight();
-    unsigned newHeight = image.getWidth();
-
-    rotatedImage.resize(newHeight, std::vector<Pixel>(newWidth)); 
-
-    for(unsigned y = 0; y<image.getHeight(); ++y){
-        for(unsigned x = 0;x<image.getWidth(); ++x){
-            switch (direction)
-            {
-            case left:
-                rotatedImage[newWidth-1-x][y] = image.at(x,y);
-                break;
-                case right:
-                rotatedImage[x][newHeight-1-y] = image.at(x,y);
-                break;
+    unsigned width = image.getWidth();
+    unsigned height = image.getHeight();
+    unsigned newWidth = height;
+    unsigned newHeight = width;
+    Image* rotated = image.createNewImage(newWidth, newHeight);
+    
+    for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x) {
+            Pixel originalPixel = image.getPixel(x, y);
+            
+            if (direction == left) {
+                rotated->setPixel(height - 1 - y, x, originalPixel);
+            } else {
+                rotated->setPixel(y, width - 1 - x, originalPixel);
             }
         }
     }
-    //otdelno za trite vida trqbva da se napravi
-    //image = PPM(newWidth, newHeight, image.getMaxColorNumbers(), image.getMagicNumber(), image.getFileName(), rotatedImage );
-
+    image.swap(*rotated);
+    delete rotated;
 }
 
 Rotate* Rotate::clone() const{

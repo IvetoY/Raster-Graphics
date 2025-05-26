@@ -1,6 +1,6 @@
 #include "Undo.h"
-#include "../Session/Session.h"
 
-void Undo::apply(Session& session){
-    session.undo();
+void Undo::apply(System& system) const{
+    system.undo();
 }
+Commands* Undo::clone() const{return new Undo(*this);}

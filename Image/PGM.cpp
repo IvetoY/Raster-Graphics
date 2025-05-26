@@ -1,19 +1,38 @@
 #include "PGM.h"
 #include "Image.h"
+#include <fstream>
+#include "../Pixel/Pixel.h"
 PGM::PGM() : Image(), format(P2_ASCII), pixels(nullptr) {}
 
 PGM::PGM(const String& fileName)
     : Image(), format(P2_ASCII), pixels(nullptr) {
-    //load(fileName);
+    load(fileName);
+}
+PGM::PGM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers,
+         const String& _magicNumber, const String& _fileName,
+         Pixel**&& _pixels, Format _format)
+    : Image(_width, _height, _maxColourNumbers, _magicNumber, _fileName),
+      format(_format),
+      pixels(_pixels)
+{}
+PGM::PGM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, 
+         const String& _magicNumber, const String& _fileName,
+         const Pixel* const* _pixels)
+    : Image(_width, _height, _maxColourNumbers, _magicNumber, _fileName),
+      format(_magicNumber == "P2" ? P2_ASCII : P5_BINARY)
+{
+    for(unsigned y = 0; y < height; ++y){
+		this->pixels[y] = new Pixel[width];
+		for(unsigned x = 0; x < width; ++x){
+			this->pixels[y][x] = pixels[y][x];
+		}
+	}
 }
 
 PGM::~PGM(){free();}
-PGM::PGM(const PGM& other) : Image(other), format(other.format){
-    copy(other);
-}
-PGM::PGM(PGM&& other) noexcept : Image(std::move(other)), format(other.format){
-    move(std::move(other));
-}
+
+PGM::PGM(const PGM& other) : Image(other), format(other.format){copy(other);}
+PGM::PGM(PGM&& other) noexcept : Image(std::move(other)), format(other.format){move(std::move(other));}
 PGM& PGM::operator=(const PGM& other){
     if(this!=&other){
         free();
@@ -35,11 +54,111 @@ Image* PGM::collage(const Image* second, const String& newFileName, Direction di
 }
 Image* PGM::collageWithPBM(const PBM* second, const String& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
 Image* PGM::collageWithPPM(const PPM* second, const String& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
+Image* PGM::collageWithPGM(const PGM* second, const String& newFileName, Direction d) const {
+    if (!second) throw std::invalid_argument("Null image provided");
+    
+    unsigned newWidth = width, newHeight = height;
+    if(d == Direction::HORIZONTAL){
+        newWidth += second->width;
+        newHeight = std::max(height, second->height);
+    } 
+    else{
+        newHeight += second->height;
+        newWidth = std::max(width, second->width);
+    }
+    
+    Pixel** newPixels = new Pixel*[newHeight];
+    for(unsigned y = 0; y < newHeight; ++y){
+        newPixels[y] = new Pixel[newWidth]();  
+        if (d == Direction::HORIZONTAL){
+            if (y < height){
+                for(unsigned x = 0; x < width; ++x){
+                    newPixels[y][x] = pixels[y][x];
+                }
+            }
+            if (y < second->height){
+                for(unsigned x = 0; x < second->width; ++x){
+                    newPixels[y][width + x] = second->pixels[y][x];
+                }
+            }
+        } 
+        else {
+            if(y < height){
+                for(unsigned x = 0; x < width; ++x){
+                    newPixels[y][x] = pixels[y][x];
+                }
+            }
+            else if (y - height < second->height){
+                for(unsigned x = 0; x < second->width; ++x){
+                    newPixels[y][x] = second->pixels[y - height][x];
+                }
+            }
+        }
+    }
+    
+    uint8_t newMaxColor = std::max(maxColourNumbers, second->maxColourNumbers);
+    return new PGM(newWidth, newHeight, newMaxColor, magicNumber, newFileName, std::move(newPixels), format);
+}
 
+void PGM::grayscale(){}
+
+void PGM::monochrome() {
+    uint8_t threshold = maxColourNumbers / 2;
+    for(unsigned y = 0; y < height; ++y) {
+        for(unsigned x = 0; x < width; ++x) {
+            uint8_t value = static_cast<uint8_t>(
+                0.299 * pixels[y][x].getRed() + 
+                0.587 * pixels[y][x].getGreen() + 
+                0.114 * pixels[y][x].getBlue()
+            );
+            uint8_t monoValue = (value > threshold) ? maxColourNumbers : 0;
+            pixels[y][x].setRed(monoValue);
+            pixels[y][x].setGreen(monoValue);
+            pixels[y][x].setBlue(monoValue);
+        }
+    }
+}
+
+void PGM::negative() {
+    for(unsigned y = 0; y < height; ++y){
+        for (unsigned x = 0; x < width; ++x){
+            unsigned  r = pixels[y][x].getRed();
+            unsigned  g = pixels[y][x].getGreen();
+            unsigned  b = pixels[y][x].getBlue();
+            pixels[y][x].setRed(maxColourNumbers - r);
+            pixels[y][x].setGreen(maxColourNumbers - g);
+            pixels[y][x].setBlue(maxColourNumbers - b);
+        }
+    }
+}
+void PGM::rotateLeft() {
+    Pixel** rotated = new Pixel*[width];
+    for(unsigned x = 0; x < width; ++x){
+        rotated[x] = new Pixel[height];
+        for(unsigned y = 0; y < height; ++y){
+            rotated[x][y] = pixels[y][width - 1 - x];
+        }
+    }
+    free();
+    std::swap(width, height);
+    pixels = rotated;
+}
+void PGM::rotateRight(){
+    Pixel** rotated = new Pixel*[width];
+    for(unsigned x = 0; x < width; ++x){
+        rotated[x] = new Pixel[height];
+        for(unsigned y = 0; y < height; ++y){
+            rotated[x][y] = pixels[height - 1 - y][x];
+        }
+    }
+    free();
+    std::swap(width, height);
+    pixels = rotated;
+}
 PGM* PGM::clone() const{return new PGM(*this);}
 void PGM::free(){
-    if (pixels != nullptr) {
-        for (unsigned y = 0; y < height; ++y) {
+    if (pixels != nullptr){
+        for(unsigned y = 0; y < height; ++y){
             delete[] pixels[y];
         }
         delete[] pixels;
@@ -48,14 +167,13 @@ void PGM::free(){
 }
 void PGM::move(PGM&& other){
     pixels = other.pixels;
-    
     width = other.width;
     height = other.height;
     maxColourNumbers = other.maxColourNumbers;
     magicNumber = std::move(other.magicNumber);
     fileName = std::move(other.fileName);
-    
     format = other.format;
+
     other.pixels = nullptr;
     other.width = 0;
     other.height = 0;
@@ -73,3 +191,93 @@ void PGM::copy(const PGM& other) {
     format = other.format;
     pixels = other.pixels; 
 } 
+
+void PGM::load(const String& filePath) {
+    std::ifstream file(filePath.c_str(), format == P5_BINARY ? std::ios::binary : std::ios::in);
+    if (!file.is_open()){throw std::runtime_error("Failed to open PGM file");}
+    file >> magicNumber;
+    if (magicNumber != "P2" && magicNumber != "P5") {throw std::runtime_error("Invalid PGM format");}
+    format = (magicNumber == "P2") ? P2_ASCII : P5_BINARY;
+    
+    file >> width >> height >> maxColourNumbers;
+    file.ignore(1);
+    free();
+    pixels = new Pixel*[height];
+    for (unsigned y = 0; y < height; ++y){
+        pixels[y] = new Pixel[width];
+    }
+
+
+    if (format == P2_ASCII){
+        for (unsigned y = 0; y < height; ++y){
+            for (unsigned x = 0; x < width; ++x){
+                int value;
+                file >> value;
+                uint8_t gray = static_cast<uint8_t>(value);
+                pixels[y][x].setRed(gray);
+                pixels[y][x].setGreen(gray);
+                pixels[y][x].setBlue(gray);
+            }
+        }
+    } else { // P5_BINARY
+        uint8_t* buffer = new uint8_t[width];
+        for (unsigned y = 0; y < height; ++y) {
+            file.read(reinterpret_cast<char*>(buffer), width);
+            for (unsigned x = 0; x < width; ++x) {
+                pixels[y][x].setRed(buffer[x]);
+                pixels[y][x].setGreen(buffer[x]);
+                pixels[y][x].setBlue(buffer[x]);
+            }
+        }
+        delete[] buffer;
+    }
+
+    fileName = filePath;
+}
+
+void PGM::save(const String& filePath) const {
+    std::ofstream file(filePath.c_str(), format == P5_BINARY ? std::ios::binary : std::ios::out);
+    if(!file.is_open()){throw std::runtime_error("Failed to create PGM file");}
+    
+    file << magicNumber << "\n"
+         << width << " " << height << "\n"
+         << static_cast<int>(maxColourNumbers) << "\n";
+    
+    if(format == P2_ASCII){
+        for(unsigned y = 0; y < height; ++y){
+            for(unsigned x = 0; x < width; ++x) {
+                uint8_t gray = static_cast<uint8_t>(
+                    0.299 * pixels[y][x].getRed() + 
+                    0.587 * pixels[y][x].getGreen() + 
+                    0.114 * pixels[y][x].getBlue()
+                );
+                file << static_cast<int>(gray) << " ";
+            }
+            file << "\n";
+        }
+    } 
+    else { // P5_BINARY
+        uint8_t* buffer = new uint8_t[width];
+        for (unsigned y = 0; y < height; ++y){
+            for(unsigned x = 0; x < width; ++x){
+                buffer[x] = static_cast<uint8_t>(
+                    0.299 * pixels[y][x].getRed() + 
+                    0.587 * pixels[y][x].getGreen() + 
+                    0.114 * pixels[y][x].getBlue()
+                );
+            }
+            file.write(reinterpret_cast<const char*>(buffer), width);
+        }
+        delete[] buffer;
+    }
+}
+
+Pixel PGM::getPixel(unsigned x, unsigned y) const {
+    if (x >= width || y >= height){throw std::out_of_range("Invalid pixel coordinates!");}
+    return pixels[y][x];
+}
+
+void PGM::setPixel(unsigned x, unsigned y, const Pixel& pixel) {
+    if (x >= width || y >= height){throw std::out_of_range("Invalid pixel coordinates!");}
+    pixels[y][x] = pixel;
+}

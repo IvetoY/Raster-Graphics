@@ -3,7 +3,12 @@
 #include <vector>
 #include <memory>
 #include "../Pixel/Pixel.h"
-#include "../String/String.h"
+#include "../Structures/String/String.h"
+#include <utility>
+class PPM;
+class PBM;
+class PGM;
+enum class Direction{HORIZONTAL, VERTICAL};
 class Image{
     protected:
     unsigned width;
@@ -11,41 +16,50 @@ class Image{
     uint8_t maxColourNumbers; // Maximum color value 0-255 for 8-bit RGB
     String magicNumber;
     String fileName;
-    std::vector<std::vector<Pixel>> pixels;
-    enum Direction{HORIZONTAL, VERTICAL};
+    
     public:
     Image();
-    Image(unsigned _w, unsigned _h, uint8_t _m, const  String& _mN,const String& _fN, std::vector<std::vector<Pixel>> _p); //add vector for transformations
+    Image(unsigned width, unsigned height, unsigned maxColorNumber,const String& magicNumber, const String& fileName);
     Image(const Image& other);
+    Image(Image&& other) noexcept;
+
+    Image& operator=(const Image&) = default;
+    Image& operator=(Image&&) noexcept = default;
+
     virtual Image* clone() const = 0;
     virtual ~Image() = default;
 
-    unsigned getWidth() const;
-    unsigned getHeight() const;
+    unsigned getWidth() const{return width;}
+    unsigned getHeight() const{return height;}
     void setMaxColourValue(uint8_t value) {maxColourNumbers = value;}
     uint8_t getMaxColourNumbers() const {return maxColourNumbers;}
-    const String& getMagicNumber() const;
     const String& getFileName() const;
+    virtual const char* getFileExtension() const = 0;
 
     void setFileName(const String& name);
 
-    Pixel& at(unsigned x, unsigned y);
-    const Pixel& at(unsigned x, unsigned y) const;
-
     virtual void save(const String& path) const = 0;
+    virtual void load(const String& filePath) = 0;
 
-    virtual Image* collage(const Image* second, const String& filename, Direction direction) const = 0;//to be done : type of images
+    virtual Image* collage(const Image* second, const String& filename, Direction direction) const = 0;
     virtual Image* collageWithPPM(const PPM* ppm, const String& newFileName, Direction direction) const = 0;
     virtual Image* collageWithPBM(const PBM* pbm, const String& newFileName, Direction direction) const =0;
     virtual Image* collageWithPGM(const PGM* pgm, const String& newFilaName, Direction direction) const = 0;
     void print(std::ostream& os) const;
-    //virtual void applyTransformation(const Transformation& transform) = 0;
 
     const String& getMagicNumber() const {return magicNumber;}
 
+    virtual void grayscale() = 0;
+	virtual void negative() = 0;
+	virtual void monochrome() = 0;
+	virtual void rotateLeft() = 0;
+	virtual void rotateRight() = 0;
 
+    virtual Pixel getPixel(unsigned x, unsigned y) const =0;
+
+    virtual void setPixel(unsigned x, unsigned y, const Pixel& pixel)=0;
+
+    //virtual Image* createNewImage(unsigned width, unsigned height) const = 0;
+    //virtual void swap(Image& other) = 0;
 };
 
-class PPM;
-class PGM;
-class PBM;

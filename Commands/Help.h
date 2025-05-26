@@ -3,8 +3,9 @@
 
 class Help : public Commands{
 public:
-    void apply(Session& session) override;
-    void undo(Session& session) override{}
+    Help() = default;
+    void apply(System& system)const override;
+    Commands* clone() const override;
     String getCommandName() const override {return "help";}
     String getCommandDescription() const override {return "Displays help information";}
 };

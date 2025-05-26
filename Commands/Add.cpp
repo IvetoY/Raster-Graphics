@@ -1,10 +1,12 @@
-#include "Add.h"
-#include "../Session/Session.h"
-explicit Add::Add(Image* img) : image(img) {
-        if(img == nullptr){throw std::invalid_argument("Add command: nullptr image provided");}
-}
+#include "../Commands/Add.h"
+#include "../System/System.h"
 
-void Add::apply(Session& session) {
-        if (image == nullptr) {throw std::runtime_error("Add command: Image pointer is null");}
-        session.addImage(image->clone());
-    }
+void Add::apply(System& system) const {
+        system.addImageToSession(this->filename);
+}
+Add::Add(const String& fileName) : filename(fileName){}
+
+Add::Add(String && fileName) : filename(std::move(fileName))
+{}
+
+Commands* Add::clone() const{return new Add(*this);}

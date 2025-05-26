@@ -1,14 +1,13 @@
 #pragma once
 #include "Commands.h"
-#include "../String/String.h"
+#include "../System/System.h"
 class Switch : public Commands {
-    size_t newIndex;
-    size_t previousIndex;
+    int switchTo;
 public:
-    explicit Switch(size_t index) : newIndex(index) {}
+    Switch(int switchTo);
     
-    void apply(Session& session) override;
-    void undo(Session& session) override;
+    void apply(System& system) const override;
+    Commands* clone() const override;
     String getCommandName() const override {return "switch";}
     String getCommandDescription() const override {return "Switches active image";}
 };

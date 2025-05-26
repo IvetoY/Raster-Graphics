@@ -1,67 +1,119 @@
 #include "PPM.h"
 #include "Image.h"
-#include "../Pixel/Pixel.h"
-#include "../Utils/PathHelper.h"
 #include <fstream>
-#include <stdexcept>
+#include "../Pixel/Pixel.h"
 #include <cstring>
-#include "../Commands/Load.h"
-PPM::~PPM(){pixels.clear();}
-PPM::PPM() : Image(), format(Format::P3_ASCII){magicNumber = "P3";}
+#include "../Utils/PathHelper.h" 
 
-PPM::PPM(String& fileName){Load(fileName);}
-
-PPM& PPM::operator=(const PPM& other)
+PPM::PPM() : Image(), format(Format::P3_ASCII), pixels(nullptr){}
+PPM::PPM(unsigned _width, unsigned _height, uint8_t _maxColour,
+         const String& _magicNumber, const String& _fileName,
+         Pixel**&& pixels, Format _format)
+    : Image(_width, _height, _maxColour, _magicNumber, _fileName),
+      format(_format),
+      pixels(pixels)
+{}
+PPM::PPM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, 
+         const String& _magicNumber, const String& _fileName,
+         const Pixel* const* _pixels)
+    : Image(_width, _height, _maxColourNumbers, _magicNumber, _fileName),
+      format(_magicNumber == "P3" ? P3_ASCII : P6_BINARY)
 {
-    if (this != &other){
-        pixels.clear();
+    for(unsigned i = 0; i < height; ++i){
+		this->pixels[i] = new Pixel[width];
+		for (unsigned j = 0; j < width; ++j){
+			this->pixels[i][j] = pixels[i][j];
+		}
+	}
+}
+PPM::PPM(const String& fileName):Image(), format(P3_ASCII), pixels(nullptr){load(fileName);}
+
+PPM& PPM::operator=(const PPM& other){
+    if(this!=&other){
+        free();
         copy(other);
         Image::operator=(other);
     }
     return *this;
 }
-PPM& PPM::operator=(PPM&& other) noexcept
-{
+PPM& PPM::operator=(PPM&& other) noexcept{
     if (this != &other){
-        pixels.clear();
+        free();
         copy(std::move(other));
         Image::operator=(std::move(other));
     }
     return *this;
 }
-
-PPM::PPM(const PPM& other) : Image(other), format(other.format) {
-    pixels = other.pixels;
-}
+PPM::~PPM(){free();}
+PPM::PPM(const PPM& other) : Image(other), format(other.format) {copy(other);}
 PPM::PPM(PPM&& other) noexcept : Image(std::move(other)){move(std::move(other));}
 
-PPM::PPM(unsigned _width, unsigned _height, uint8_t _maxColour, const String& _magicNum, const String& _fileName, const std::vector<std::vector<Pixel>>& _pixels, Format _format = P3_ASCII): 
-    Image(_width, _height, _maxColour, _magicNum, _fileName, _pixels), format(_format) {}
-PPM* PPM::clone() const {
-    return new PPM(*this);
+PPM* PPM::clone() const {return new PPM(*this);}
+
+void PPM::grayscale() {
+    for (unsigned y = 0; y < height; ++y){
+        for(unsigned x = 0; x < width; ++x) {
+            Pixel& p = pixels[y][x];
+            uint8_t gray = static_cast<uint8_t>(
+                0.299 * p.getRed() + 
+                0.587 * p.getGreen() + 
+                0.114 * p.getBlue()
+            );
+            p.setRed(gray);
+            p.setGreen(gray);
+            p.setBlue(gray);
+        }
+    }
+}
+void PPM::monochrome() {
+    for (unsigned y = 0; y < height; ++y) {
+        for(unsigned x = 0; x < width; ++x){
+            Pixel& p = pixels[y][x];
+            uint8_t avg = static_cast<uint8_t>(
+                (p.getRed() + p.getGreen() + p.getBlue()) / 3
+            );
+            uint8_t bw = (avg > maxColourNumbers / 2) ? maxColourNumbers : 0;
+            p.setRed(bw);
+            p.setGreen(bw);
+            p.setBlue(bw);
+        }
+    }
+}
+void PPM::rotateLeft(){
+    Pixel** rotated = new Pixel*[width];
+    for(unsigned x = 0; x < width; ++x){
+        rotated[x] = new Pixel[height];
+        for (unsigned y = 0; y < height; ++y){
+            rotated[x][y] = pixels[y][width - 1 - x];
+        }
+    }
+    free();
+    pixels = rotated;
+    std::swap(width, height);
+}
+void PPM::rotateRight(){
+    Pixel** rotated = new Pixel*[width];
+    for(unsigned x = 0; x < width; ++x){
+        rotated[x] = new Pixel[height];
+        for(unsigned y = 0; y < height; ++y){
+            rotated[x][y] = pixels[height - 1 - y][x];
+        }
+    }
+    free();
+    pixels = rotated;
+    std::swap(width, height);
+}
+void PPM::negative(){
+    for (unsigned y = 0; y < height; ++y){
+        for (unsigned x = 0; x < width; ++x) {
+            Pixel& p = pixels[y][x];
+            p.setRed(maxColourNumbers - p.getRed());
+            p.setGreen(maxColourNumbers - p.getGreen());
+            p.setBlue(maxColourNumbers - p.getBlue());
+        }
+    }
 }
 
-/*void PPM::load(const String& filename){
-    std::ifstream file(filename.c_str(), std::ios::binary);
-    if(!file){throw std::runtime_error(("Failed to open file: " + filename).c_str());}
-
-    file>>magicNumber;
-    if(magicNumber!= "P3" && magicNumber!="P6"){throw std::runtime_error("Invalid PPM format. Only P3 and P6 are supported!");}
-    
-    if(magicNumber == "P3"){format = P3_ASCII;}
-    else {format = P6_BINARY;}
-    
-    file>>width>>height>>maxColourNumbers;
-
-    //  whitecpace/comments
-    file>>std::ws;
-    while(file.peek() == '#'){file.ignore(1024,'\n');}
-    file >> std::ws;
-
-    pixels.resize(height,std::vector<Pixel>(width));
-
-    
-}*/
 Image* PPM::collage(const Image* second, const String& newFileName, Direction d)const{
     return second->collageWithPPM(this, newFileName, d);
 }
@@ -71,11 +123,10 @@ void PPM::save(const String& filename) const{
     if (format == P6_BINARY) {
         mode |= std::ios::binary;
     }
-    
-    std::ofstream file(filename.c_str(), mode);
     std::ofstream file(filename.c_str());
 
     if (!file){throw std::runtime_error(("Failed to create file: " + filename).c_str());}
+
     file<<magicNumber << std::endl;
     file<<height<<" "<<width <<std::endl;
     file<<(uint8_t)maxColourNumbers<<std::endl;
@@ -88,7 +139,7 @@ void PPM::save(const String& filename) const{
                 <<static_cast<int>(pixel.getGreen()) << " "
                 <<static_cast<int>(pixel.getBlue()) << " ";
             }
-            else{//format == P6_BINARY
+            else{//P6_BINARY
                 file.write(reinterpret_cast<const char*>(&pixel), sizeof(Pixel));
             }
         }
@@ -108,7 +159,7 @@ Image* PPM::collageWithPPM(const PPM* second, const String& newFileName, Directi
     size_t newWidth = d == Direction::HORIZONTAL ? width + second->width : std::max(width, second->width);
     size_t newHeight = d == Direction::HORIZONTAL ? std::max(height, second->height) : height + second->height;
 
-    std::vector<std::vector<Pixel>> newPixels(newHeight, std::vector<Pixel>(newWidth, Pixel(0,0,0)));
+    Pixel** newPixels = new Pixel*[newHeight];
 
     for (unsigned y = 0; y < height; ++y){
         for (unsigned x = 0; x < width; ++x) {
@@ -123,33 +174,31 @@ Image* PPM::collageWithPPM(const PPM* second, const String& newFileName, Directi
         }
     }
     else{
-        for (unsigned y = 0; y < second->getHeight(); ++y){
-            for (unsigned x = 0; x < second->getWidth(); ++x){
+        for(unsigned y = 0; y < second->getHeight(); ++y){
+            for(unsigned x = 0; x < second->getWidth(); ++x){
                 newPixels[y + height][x] = second->pixels[y][x];
             }
         }
     }
-
-    return new PPM(newWidth, newHeight, std::max(maxColourNumbers, second->getMaxColourNumbers()), magicNumber, newFileName, newPixels, format);
+    uint8_t newMaxColour=std::max(maxColourNumbers, second->getMaxColourNumbers());
+    return new PPM(newWidth, newHeight, newMaxColour, magicNumber, newFileName, std::move(newPixels), format);
 }
 
 
-
+void PPM::free(){
+    if(pixels){
+        for(unsigned y = 0; y < height; ++y){
+            delete[] pixels[y];
+        }
+        delete[] pixels;
+        pixels = nullptr;
+    }
+}
 void PPM::move(PPM&& other) noexcept {
-    pixels = std::move(other.pixels);
-    other.pixels.clear();
-    
-    width = other.width;
-    height = other.height;
-    maxColourNumbers = other.maxColourNumbers;
-    magicNumber = std::move(other.magicNumber);
-    fileName = std::move(other.fileName);
+    pixels = other.pixels;
     format = other.format;
-
-    other.width = 0;
-    other.height = 0;
-    other.maxColourNumbers = 0;
-    other.format = P3_ASCII;  
+    other.pixels = nullptr;
+    other.format = P3_ASCII; 
 }
 
 void PPM::copy(const PPM& other) {
@@ -161,3 +210,76 @@ void PPM::copy(const PPM& other) {
     format = other.format;
     pixels = other.pixels; 
 } 
+
+void PPM::load(const String& filePath) {
+    std::ifstream file(filePath.c_str(), std::ios::binary);
+    if(!file.is_open()){throw std::runtime_error("Failed to open PPM file");}
+    file >> magicNumber;
+    if(magicNumber != "P3" && magicNumber != "P6"){throw std::runtime_error("Invalid PPM format. Only P3 and P6 are supported!");}
+
+    format = (magicNumber == "P3") ? P3_ASCII : P6_BINARY;
+    file >> width >> height >> maxColourNumbers;
+
+    file >> std::ws;
+    while (file.peek() == '#') {
+        file.ignore(1024, '\n');
+    }
+    file >> std::ws;
+    free();
+    pixels = new Pixel*[height];
+    for (unsigned y = 0; y < height; ++y){
+        pixels[y] = new Pixel[width];
+    }
+
+    if (format == P3_ASCII){
+        for (unsigned y = 0; y < height; ++y){
+            for (unsigned x = 0; x < width; ++x) {
+                int r, g, b;
+                file >> r >> g >> b;
+                if (file.fail()){
+                free();
+                throw std::runtime_error("Error reading color values from PPM file");
+                }
+                
+                if (r < 0 || r > maxColourNumbers || 
+                    g < 0 || g > maxColourNumbers || 
+                    b < 0 || b > maxColourNumbers) {
+                    free();
+                    throw std::runtime_error("Invalid color value in PPM file");
+                }
+                
+                pixels[y][x] = Pixel(static_cast<uint8_t>(r),static_cast<uint8_t>(g),static_cast<uint8_t>(b));
+            }
+        }
+    } else {
+        file.ignore(1);
+        
+        const size_t rowSize = width * 3;
+        char* rowBuffer = new char[rowSize];
+        
+        for (unsigned y = 0; y < height; ++y){
+            file.read(rowBuffer, rowSize);
+            if (file.gcount() != static_cast<std::streamsize>(rowSize)) {
+                delete[] rowBuffer;
+                free();
+                throw std::runtime_error("Unexpected end of file in PPM binary data");
+            }
+            
+            for (unsigned x = 0; x < width; ++x) {
+                pixels[y][x] = Pixel(static_cast<uint8_t>(rowBuffer[x*3]),static_cast<uint8_t>(rowBuffer[x*3+1]),static_cast<uint8_t>(rowBuffer[x*3+2]));
+            }
+        }
+        delete[] rowBuffer;
+    }
+    fileName = filePath;
+}
+
+Pixel PPM::getPixel(unsigned x, unsigned y) const {
+    if(x >= width || y >= height){throw std::out_of_range("Invalid pixel coordinates!");}
+    return pixels[y][x];
+}
+
+void PPM::setPixel(unsigned x, unsigned y, const Pixel& pixel) {
+    if(x >= width || y >= height){throw std::out_of_range("Invalid pixel coordinates!");}
+    pixels[y][x] = pixel;
+}

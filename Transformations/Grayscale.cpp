@@ -5,7 +5,7 @@
 void Grayscale::apply(Image& image) const {
     for(unsigned y = 0;y<image.getHeight(); ++y){
         for(unsigned x = 0; x<image.getWidth(); ++x){
-            Pixel& pixel = image.at(x,y);
+            Pixel pixel = image.getPixel(x,y);
             uint8_t gray = static_cast<uint8_t>(0.299 * pixel.getRed() + 0.587 * pixel.getGreen() + 0.114 * pixel.getBlue());
             pixel.setRGB(gray, gray, gray);
         }

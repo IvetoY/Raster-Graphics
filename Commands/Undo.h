@@ -1,10 +1,12 @@
 #pragma once
 #include "Commands.h"
+#include "../System/System.h"
 
 class Undo: public Commands{
 public:
-    void apply(Session& session) override;
-    void undo(Session& session) override {}
+    void apply(System& system) const override;
+    Commands* clone() const override;
+    Undo() = default;
     String getCommandName() const override {return "undo";}
     String getCommandDescription() const override {return "Undoes the last command";}
 };

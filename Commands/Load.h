@@ -1,14 +1,17 @@
 #pragma once
-#include "../Transformations/Transformations.h"
+#include "../Structures/String/String.h"
+#include <vector>
 #include "Commands.h"
+#include "../System/System.h"
 class Load: public Commands{
-    String filePath;
-    int sessionID;
+    private:
+    std::vector<String> files;
     public:
-    Load() {}
-    Load(String& _filePath) : filePath(_filePath){}
-    void apply(Session& session) override;
-    void undo(Session& session) override;
+    ~Load() override = default;
+    Load(const std::vector<String>& files);
+	Load(std::vector<String>&& files);
+    Commands* clone() const override;
+    void apply(System& system) const override;
     String getCommandName() const override{return "load";}
     String getCommandDescription() const override {return "Loads an image from file";}
 };

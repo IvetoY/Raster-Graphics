@@ -1,38 +1,42 @@
 #include "Image.h"
+#include <cstring>
+#include <stdexcept>
 #include "../Utils/PathHelper.h"
-Image::Image() : width(0), height(0), maxColourNumbers(0), magicNumber(new char[1]), fileName(new char[1]) {
-    magicNumber[0] = '\0';
-    fileName[0] = '\0';
+#include "../Pixel/Pixel.h"
+#include "../Transformations/Transformations.h"
+Image::Image(unsigned width, unsigned height, unsigned maxColourNumbers,const String& magicNumber, const String& fileName)
+	:width(width), height(height) , maxColourNumbers(maxColourNumbers), magicNumber(magicNumber),
+	fileName(fileName){}
+
+Image::Image() : width(0), height(0), maxColourNumbers(0) {}
+
+Image::Image(const Image& other) 
+    : width(other.width),
+      height(other.height),
+      maxColourNumbers(other.maxColourNumbers),
+      magicNumber(other.magicNumber),
+      fileName(other.fileName) {
 }
 
-Image::Image(unsigned _w, unsigned _h, uint8_t _m,const String& _mN, const String& _fN, std::vector<std::vector<Pixel>> _p) : width(_w), height(_h), maxColourNumbers(_m), magicNumber(_mN), fileName(_fN), pixels(_p) {}
-Image::Image(const Image& other) : width(other.width), height(other.height),maxColourNumbers(other.maxColourNumbers), magicNumber(other.magicNumber), fileName(other.fileName), pixels(other.pixels) {}
-unsigned Image::getHeight() const {return height;}
-unsigned Image::getWidth() const {return width;}
-const String& Image::getMagicNumber() const{return magicNumber;}
+Image::Image(Image&& other) noexcept
+    : width(std::exchange(other.width, 0)),
+      height(std::exchange(other.height, 0)),
+      maxColourNumbers(std::exchange(other.maxColourNumbers, 0)),
+      magicNumber(std::move(other.magicNumber)),
+      fileName(std::move(other.fileName)) {
+}
+
 const String& Image::getFileName() const {return fileName;}
-void Image::setFileName(const String& name){
-    if (name != "" && name != " ")
-	{
-		fileName= name;
-		return;
-	}
 
-	throw std::invalid_argument("Name must not be empty or contain only spaces");
+void Image::setFileName(const String& newFileName){
+	const char* ext = extractFileExtension(newFileName.c_str());
+
+	if (strcmp(ext, getFileExtension()) != 0 || strlen(ext) != 4)
+		throw std::runtime_error("Invalid file name!\n");
+
+	fileName = newFileName;
 }
 
-Pixel& Image::at(unsigned x, unsigned y) {
-    if (x >= width || y >= height) {
-        throw std::out_of_range("Pixel coordinates out of range");
-    }
-    return pixels[y][x];
-}
-const Pixel& Image::at(unsigned x, unsigned y) const {
-    if (x >= width || y >= height) {
-        throw std::out_of_range("Pixel coordinates out of range");
-    }
-    return pixels[y][x];
-}
 void Image::print(std::ostream& os) const{
     os<<fileName<<std::endl;
 }

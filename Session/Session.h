@@ -5,31 +5,40 @@
 #include <memory>
 #include <utility>
 #include <stack>
+#include "../Image/ImageFactory.h"
 class Session{
 private:
-int id;
-std::vector<Image*> images;
-std::vector<Transformations*> pendingTransformations;
+int id = -1;
+static int nextId;
+std::stack<Image*> images;
+std::stack<Transformations*> transformations;
 std::stack<Image*> history;
 bool active = true;
+ImageFactory* imageFactory;
+void clearImages();
+void clearTransformations();
+void clearHistory();
 public:
-    explicit Session(int _id);
-    Session(const Session&) = delete;
-    Session& operator=(const Session&) = delete;
+    Session() = default;
     ~Session() = default;
+    Session(ImageFactory* factory);
     void addImage(Image* image);
-    void addTransformation(Transformations* transform);
-    void applyTransformations();
-
     void loadImage(const String& filename);
-    void saveImage(const String& filename);
     void closeImage();
-    void terminate();
-    bool isActive() const;
+    std::vector<Image*> getImages() const;
+    
 
+    void queueTransformation(Transformations* transformation);
+    void applyTransformations();
     void undo();
 
-    int getId() const;
-    const std::vector<Image*>& getImages() const;
-    const std::vector<Transformations*>& getPendingTransformations() const;
+    void save(const String& filename) const;
+    void saveFirstFileAs(const String& newFileName) const;
+    void printSessionInfo(std::ostream& out) const;
+    void terminate();
+
+    int getId() const { return id; }
+    bool isActive() const { return active; }
+    bool hasImages() const { return !images.empty(); }
+
 };

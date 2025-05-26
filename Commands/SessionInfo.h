@@ -3,8 +3,9 @@
 
 class SessionInfo : public Commands{
 public:
-    void apply(Session& session) override;
-    void undo(Session& session) override {}
+    void apply(System& system) const override;
+    Commands* clone() const override;
+    SessionInfo() = default;
     String getCommandName() const override {return "sessioninfo";}
     String getCommandDescription() const override {return "Displays session information";}
 };

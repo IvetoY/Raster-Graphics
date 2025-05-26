@@ -5,6 +5,7 @@ class Pixel {
 public:
     Pixel();
     Pixel(uint8_t _r, uint8_t _g, uint8_t _b);
+    Pixel(const Pixel& other);
     
     uint8_t getRed() const;
     uint8_t getGreen() const;
@@ -18,4 +19,7 @@ public:
     Pixel& operator=(const Pixel& other);
     bool operator==(const Pixel& other) const;
     bool operator!=(const Pixel& other) const;
+
+    unsigned getGray() const;
+    Pixel getRGB(const Pixel& other);
 };

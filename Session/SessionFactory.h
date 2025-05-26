@@ -1,6 +1,5 @@
 #pragma once
 #include "Session.h"
-#include <memory>
 
 class SessionFactory{
 public:
