@@ -95,12 +95,6 @@ void Session::undo() {
     images.push(history.top());
     history.pop();
 }
-Session::~Session() {
-    while (!history.empty()) {
-        delete history.top();
-        history.pop();
-    }
-}
 
 void Session::save(const String& filename) const {
     if(images.empty()){throw std::runtime_error("No images to save");}

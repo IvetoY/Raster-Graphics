@@ -119,4 +119,4 @@ void System::closeSession() {
 
 void System::exitProgram() {running = false;}
 
-bool System::isRunning() const {return running;}
+bool System::isRunning() const {return running;} 

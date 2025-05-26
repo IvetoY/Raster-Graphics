@@ -19,8 +19,8 @@ void clearImages();
 void clearTransformations();
 void clearHistory();
 public:
-    Session() = default;
-    ~Session() = default;
+    Session();
+    ~Session() ;
     Session(ImageFactory* factory);
     void addImage(Image* image);
     void loadImage(const String& filename);
