@@ -6,8 +6,8 @@ class Save: public Commands{
     private:
     std::string filename;
     public:
+    explicit Save(const std::string& filename);
     Save()=default;
-    Save(const std::string& filename);
     Commands* clone() const override;
     void apply(System& system)const override;
     String getCommandName() const override {return "save";}

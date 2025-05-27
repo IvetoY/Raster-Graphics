@@ -26,7 +26,7 @@ Image::Image(Image&& other) noexcept
       magicNumber(std::move(other.magicNumber)),
       fileName(std::move(other.fileName)) {
 }
-
+Image::Image(unsigned w, unsigned h) :width(w), height(h) {}
 const std::string& Image::getFileName() const {return fileName;}
 
 void Image::setFileName(const std::string& newFileName){

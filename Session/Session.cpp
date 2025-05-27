@@ -3,14 +3,11 @@
 #include <fstream>
 #include <stack>
 #include <algorithm>
+#include <filesystem>
 int Session::nextId = 0;
 
 Session::Session() : id(nextId++), active(true) {}
-Session::Session(ImageFactory* factory) : id(nextId++), active(true), imageFactory(factory) {
-    if (!factory) {
-        throw std::invalid_argument("Image factory cannot be null");
-    }
-}
+
 Session::~Session() {
     clearImages();
     clearTransformations();
@@ -72,19 +69,6 @@ void Session::queueTransformation(Transformations* transformation) {
     transformations.push(transformation);
 }
 
-void Session::applyTransformations() {
-    if (images.empty()) {throw std::runtime_error("No images to transform");}
-    Image* copy = images.top()->clone();
-    history.push(copy);
-    
-    while (!transformations.empty()) {
-        Transformations* transform = transformations.top();
-        transform->apply(*images.top());
-        delete transform;
-        transformations.pop();
-    }
-}
-
 void Session::undo() {
     if (history.empty()) {throw std::runtime_error("Nothing to undo");}
     
@@ -100,6 +84,7 @@ void Session::save(const std::string& filename) const {
     if(images.empty()){throw std::runtime_error("No images to save");}
     images.top()->save(filename);
 }
+
 void Session::saveFirstFileAs(const std::string& newFileName) const {
     if(images.empty()){throw std::runtime_error("No images in session");}
     std::stack<Image*> tempStack = images;
@@ -113,6 +98,7 @@ void Session::saveFirstFileAs(const std::string& newFileName) const {
     } 
     else{throw std::runtime_error("Failed to access first image");}
 }
+
 void Session::terminate() {
     active = false;
     clearImages();

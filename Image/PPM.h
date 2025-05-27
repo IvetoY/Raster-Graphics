@@ -12,6 +12,7 @@ private:
     void move(PPM&& other) noexcept;
     void free();
 public:
+    void swap(Image& other) override;
     PPM();
     explicit PPM(const std::string& fileName);
     PPM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, 

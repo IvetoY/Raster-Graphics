@@ -3,6 +3,16 @@
 #include <fstream>
 #include "../Pixel/Pixel.h"
 #include <string>
+void PGM::swap(Image& other) {
+        PGM* otherPGM = dynamic_cast<PGM*>(&other);
+        if (!otherPGM) {
+            throw std::runtime_error("Cannot swap PPM with non-PPM image");
+        }
+        std::swap(width, otherPGM->width);
+        std::swap(height, otherPGM->height);
+        std::swap(pixels, otherPGM->pixels);
+}
+
 PGM::PGM() : Image(), format(P2_ASCII), pixels(nullptr) {}
 
 PGM::PGM(const std::string& fileName)

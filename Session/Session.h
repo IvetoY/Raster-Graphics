@@ -6,8 +6,10 @@
 #include <utility>
 #include <stack>
 #include "../Image/ImageFactory.h"
+class Image;
 class Session{
 private:
+
 int id = -1;
 static int nextId;
 std::stack<Image*> images;

@@ -8,47 +8,121 @@
 #include "Commands/SessionInfo.h"
 #include "Commands/Switch.h"
 #include "Commands/Undo.h"
+#include "Transformations/Grayscale.h"
+#include "Transformations/Monochrome.h"
+#include "Transformations/Negative.h"
+#include "Transformations/Rotate.h"
 #include <iostream>
 #include <string>
-//да добавя трансформациите 
+
 int main() {
     System& system = System::getInstance();
     std::string userInput;
     
-    while (system.isRunning()){
+    while (system.isRunning()) {
         std::cout << "> ";
         std::getline(std::cin, userInput);
         
-        if(userInput.empty()){continue;}
+        if(userInput.empty()) { continue; }
         
-        Commands* cmd = nullptr;
         size_t space_pos = userInput.find(' ');
         std::string command = userInput.substr(0, space_pos);
         std::string args = (space_pos != std::string::npos) ? userInput.substr(space_pos + 1) : "";
         
-        if(command == "load"){
-            if(!args.empty()){cmd = new Load(args);} 
-            else{std::cerr << "Error: Missing file path for load command\n";}
-        }
-        else if(command == "save"){cmd = new Save();}
-        else if(command == "add"){
-            if(!args.empty()){cmd = new Add(args);}
-            else{std::cerr << "Error: Missing image path for add command\n";}
-        }
-        else if(command == "close"){cmd = new Close();}
-        else if(command == "exit"){cmd = new Exit();}
-        else if(command == "help"){cmd = new Help();}
-        else if(command == "session" && args == "info"){cmd = new SessionInfo();}
-        else if(command == "switch"){
-            if (!args.empty()){cmd = new Switch(args);} 
-            else{std::cerr << "Error: Missing session ID for switch command\n";}
-        }
-        else if(command == "undo"){cmd = new Undo();}
-        else {std::cerr << "Error: Unknown command '" << command << "'\n";}
+        Transformations* transformation = nullptr;
         
-        if(cmd != nullptr){
+        if(command == "grayscale") {
+            transformation = new Grayscale();
+        }
+        else if(command == "monochrome") {
+            transformation = new Monochrome();
+        }
+        else if(command == "negative") {
+            transformation = new Negative();
+        }
+        else if(command == "rotate") {
+            if(!args.empty()) {
+                if(args == "left") {
+                    transformation = new Rotate(Rotate::left);
+                } 
+                else if(args == "right") {
+                    transformation = new Rotate(Rotate::right);
+                }
+                else {
+                    std::cerr << "Error: Invalid rotation direction. Use 'left' or 'right'\n";
+                }
+            }
+            else {
+                std::cerr << "Error: Missing rotation direction\n";
+            }
+        }
+        else if(command == "load") {
+            if(!args.empty()) {
+                Commands* cmd = new Load(args);
+                cmd->apply(system);
+                delete cmd;
+            } 
+            else {
+                std::cerr << "Error: Missing file path for load command\n";
+            }
+        }
+        else if(command == "save") {
+            Commands* cmd = new Save();
             cmd->apply(system);
             delete cmd;
+        }
+        else if(command == "add") {
+            if(!args.empty()) {
+                Commands* cmd = new Add(args);
+                cmd->apply(system);
+                delete cmd;
+            }
+            else {
+                std::cerr << "Error: Missing image path for add command\n";
+            }
+        }
+        else if(command == "close") {
+            Commands* cmd = new Close();
+            cmd->apply(system);
+            delete cmd;
+        }
+        else if(command == "exit") {
+            Commands* cmd = new Exit();
+            cmd->apply(system);
+            delete cmd;
+        }
+        else if(command == "help") {
+            Commands* cmd = new Help();
+            cmd->apply(system);
+            delete cmd;
+        }
+        else if(command == "session" && args == "info") {
+            Commands* cmd = new SessionInfo();
+            cmd->apply(system);
+            delete cmd;
+        }
+        else if(command == "switch") {
+            if (!args.empty()) {
+                Commands* cmd = new Switch(args);
+                cmd->apply(system);
+                delete cmd;
+            } 
+            else {
+                std::cerr << "Error: Missing session ID for switch command\n";
+            }
+        }
+        else if(command == "undo") {
+            Commands* cmd = new Undo();
+            cmd->apply(system);
+            delete cmd;
+        }
+        else {
+            std::cerr << "Error: Unknown command '" << command << "'\n";
+        }
+        
+        if(transformation != nullptr) {
+            transformation->apply(system);
+            delete transformation;
         }
     }
     

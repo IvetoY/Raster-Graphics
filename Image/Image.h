@@ -23,13 +23,16 @@ class Image{
     Image(unsigned width, unsigned height, unsigned maxColorNumber,const std::string& magicNumber, const std::string& fileName);
     Image(const Image& other);
     Image(Image&& other) noexcept;
-
+    Image(unsigned width, unsigned height);
     Image& operator=(const Image&) = default;
     Image& operator=(Image&&) noexcept = default;
 
+    void setWidth(unsigned value){width = value;}
+    void setHeight(unsigned value){height = value;}
+
     virtual Image* clone() const = 0;
     virtual ~Image() = default;
-
+    virtual void swap(Image& other) = 0;
     unsigned getWidth() const{return width;}
     unsigned getHeight() const{return height;}
     void setMaxColourValue(uint8_t value) {maxColourNumbers = value;}

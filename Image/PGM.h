@@ -13,7 +13,7 @@ class PGM: public Image{
     void free();
 public:
 
-
+    void swap(Image& other) override;
     PGM();
     explicit PGM(const std::string& fileName);
     PGM(unsigned _width, unsigned _height, uint8_t _maxColorNumber, const std::string& _magicNumber, const std::string& _fileName,const Pixel* const* _pixels);

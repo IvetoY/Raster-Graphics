@@ -4,7 +4,7 @@
 
 class Grayscale: public Transformations{
 public:
-    void apply(Image& image) const override;
+    void apply(System& system) const override;
     Grayscale* clone() const override;
     
 };

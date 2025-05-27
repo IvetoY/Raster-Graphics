@@ -4,6 +4,15 @@
 #include <fstream>
 #include "../Transformations/Grayscale.h"
 #include <stdexcept>
+void PBM::swap(Image& other) {
+        PBM* otherPBM = dynamic_cast<PBM*>(&other);
+        if (!otherPBM) {
+            throw std::runtime_error("Cannot swap PPM with non-PPM image");
+        }
+        std::swap(width, otherPBM->width);
+        std::swap(height, otherPBM->height);
+        std::swap(pixels, otherPBM->pixels);
+}
 
 PBM::PBM() : Image(), format(P1_ASCII), pixels(nullptr) {}
 PBM::PBM(unsigned _width, unsigned _height, uint8_t _maxColorValue,const std::string& _magicNumber, const std::string& _fileName,Pixel**&& pixelsData, Format fmt)

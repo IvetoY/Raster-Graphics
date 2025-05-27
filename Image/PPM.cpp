@@ -4,7 +4,15 @@
 #include "../Pixel/Pixel.h"
 #include <cstring>
 #include "../Utils/PathHelper.h" 
-
+void PPM::swap(Image& other) {
+        PPM* otherPPM = dynamic_cast<PPM*>(&other);
+        if (!otherPPM) {
+            throw std::runtime_error("Cannot swap PPM with non-PPM image");
+        }
+        std::swap(width, otherPPM->width);
+        std::swap(height, otherPPM->height);
+        std::swap(pixels, otherPPM->pixels);
+}
 PPM::PPM() : Image(), format(Format::P3_ASCII), pixels(nullptr){}
 PPM::PPM(unsigned _width, unsigned _height, uint8_t _maxColour,
          const std::string& _magicNumber, const std::string& _fileName,

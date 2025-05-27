@@ -5,7 +5,7 @@ class Rotate: public Transformations{
 public:
 enum Direction{left, right};
 explicit Rotate(Direction d);
-void apply(Image& image) const override;
+void apply(System& image) const override;
 Rotate* clone() const override;
 
 Direction direction;

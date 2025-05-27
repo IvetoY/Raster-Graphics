@@ -3,6 +3,6 @@
 
 class Negative: public Transformations{
 public:
-void apply(Image& image) const override;
+void apply(System& image) const override;
 Negative* clone() const override;
 };

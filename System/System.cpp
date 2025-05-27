@@ -33,6 +33,8 @@ int System::findSession()const{
     }
     return -1;
 }
+
+
 void System::saveSession(const std::string& filename){
 	if (activeSessionID == -1){throw std::runtime_error("No active sessions!");}
 	int index = findSession();
@@ -73,9 +75,15 @@ void System::help(std::ostream& out) const {
         << "  save                   - Save current session\n"
         << "  saveas <filename>      - Save current session with new name\n"
         << "  add <filename>         - Add image to current session\n"
-        << "  info                   - Show current session info\n"
+        << "  session info           - Show current session info\n"
         << "  close                  - Close current session\n"
-        << "  exit                   - Exit the program\n";
+        << "  exit                   - Exit the program\n"
+        << "  help                   - Show this help message\n\n"
+        << "Available transformations:\n"
+        << "  grayscale              - Convert images to grayscale\n"
+        << "  monochrome             - Convert images to black and white\n"
+        << "  negative               - Invert image colors\n"
+        << "  rotate <left|right>    - Rotate images 90 degrees\n";
 }
 
 void System::undo() {
