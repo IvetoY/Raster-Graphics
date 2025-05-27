@@ -46,7 +46,7 @@ void Session::addImage(Image* image) {
     
     images.push(image);
 }
-void Session::loadImage(const String& filename) {
+void Session::loadImage(const std::string& filename) {
     Image* newImage = ImageFactory::create(filename);
     addImage(newImage);
 }
@@ -96,11 +96,11 @@ void Session::undo() {
     history.pop();
 }
 
-void Session::save(const String& filename) const {
+void Session::save(const std::string& filename) const {
     if(images.empty()){throw std::runtime_error("No images to save");}
     images.top()->save(filename);
 }
-void Session::saveFirstFileAs(const String& newFileName) const {
+void Session::saveFirstFileAs(const std::string& newFileName) const {
     if(images.empty()){throw std::runtime_error("No images in session");}
     std::stack<Image*> tempStack = images;
     Image* firstImage = nullptr;

@@ -6,14 +6,14 @@
 #include <stdexcept>
 
 PBM::PBM() : Image(), format(P1_ASCII), pixels(nullptr) {}
-PBM::PBM(unsigned _width, unsigned _height, uint8_t _maxColorValue,const String& _magicNumber, const String& _fileName,Pixel**&& pixelsData, Format fmt)
+PBM::PBM(unsigned _width, unsigned _height, uint8_t _maxColorValue,const std::string& _magicNumber, const std::string& _fileName,Pixel**&& pixelsData, Format fmt)
     : Image(_width, _height, _maxColorValue, _magicNumber, _fileName),
       format(fmt),
       pixels(pixelsData)
 {
     if (_maxColorValue != 1){throw std::invalid_argument("PBM max color value must be 1");}
 }
-PBM::PBM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, const String& _magicNumber, const String& _fileName,const Pixel* const* _pixels)
+PBM::PBM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, const std::string& _magicNumber, const std::string& _fileName,const Pixel* const* _pixels)
     : Image(_width, _height, _maxColourNumbers, _magicNumber, _fileName),
       format(_magicNumber == "P1" ? P1_ASCII : P4_BINARY), pixels(new Pixel*[height])
     {
@@ -25,7 +25,7 @@ PBM::PBM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, const Str
 		}
 	}
 }
-PBM::PBM(const String& fileName): Image(), format(P1_ASCII), pixels(nullptr) {load(fileName);}
+PBM::PBM(const std::string& fileName): Image(), format(P1_ASCII), pixels(nullptr) {load(fileName);}
 
 PBM::~PBM(){free();}
 PBM::PBM(const PBM& other) : Image(other), format(other.format){copy(other);}
@@ -46,12 +46,12 @@ PBM& PBM::operator=(PBM&& other) noexcept{
     }
     return *this;
 }
-Image* PBM::collage(const Image* second, const String& newFileName, Direction direction) const{
+Image* PBM::collage(const Image* second, const std::string& newFileName, Direction direction) const{
     return second->collageWithPBM(this, newFileName, direction);
 }
-Image* PBM::collageWithPGM(const PGM* second, const String& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
-Image* PBM::collageWithPPM(const PPM* second, const String& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
-Image* PBM::collageWithPBM(const PBM* second, const String& newFileName, Direction d) const {
+Image* PBM::collageWithPGM(const PGM* second, const std::string& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
+Image* PBM::collageWithPPM(const PPM* second, const std::string& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
+Image* PBM::collageWithPBM(const PBM* second, const std::string& newFileName, Direction d) const {
     if(!second){throw std::invalid_argument("Null image provided");}
     
     unsigned newWidth = width, newHeight = height;
@@ -203,7 +203,7 @@ void PBM::copy(const PBM& other) {
 } 
 
 
-void PBM::load(const String& filePath){
+void PBM::load(const std::string& filePath){
     std::ifstream file(filePath.c_str(), std::ios::binary);
     if(!file.is_open()){throw std::runtime_error(("Failed to open PBM file: " + filePath).c_str());}
 
@@ -269,7 +269,7 @@ void PBM::load(const String& filePath){
     fileName = filePath;
 }
 
-void PBM::save(const String& filePath) const {
+void PBM::save(const std::string& filePath) const {
     std::ofstream file(filePath.c_str(), (format == P4_BINARY) ? std::ios::binary : std::ios::out);
     if(!file.is_open()){throw std::runtime_error(("Failed to create PBM file: " + filePath).c_str());}
     file << (format == P1_ASCII ? "P1\n" : "P4\n")

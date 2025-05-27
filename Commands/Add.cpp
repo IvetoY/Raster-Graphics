@@ -4,9 +4,9 @@
 void Add::apply(System& system) const {
         system.addImageToSession(this->filename);
 }
-Add::Add(const String& fileName) : filename(fileName){}
+Add::Add(const std::string& fileName) : filename(fileName){}
 
-Add::Add(String && fileName) : filename(std::move(fileName))
+Add::Add(std::string && fileName) : filename(std::move(fileName))
 {}
 
 Commands* Add::clone() const{return new Add(*this);}

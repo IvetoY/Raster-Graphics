@@ -7,9 +7,6 @@ void Negative::apply(Image& image) const {
         }
     }
 }
-String Negative::getTransformationName() const {
-    return "Negative transformation";
-}
 Negative* Negative::clone() const {
     return new Negative(*this);
 }

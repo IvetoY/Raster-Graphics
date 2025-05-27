@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <cstring>
 #include "../Structures/String/String.h"
 #include "../Session/Session.h"
 class Session;
@@ -17,23 +18,23 @@ public:
 	System& operator=(const System&) = delete;
 	~System();
 	
-	void loadSession(const std::vector<String>& files);
+	void loadSession(const std::vector<std::string>& files);
 	void help(std::ostream& out) const;
 	void switchSession(int newID);
-	void saveSession(const String& filename);
+	void saveSession(const std::string& filename);
 	void printSessionInfo() const;
 	void closeSession();
     void undo();
     int createNewSession();
 
-	void addImageToSession(const String& fileName);
-	void saveSessionFileAs(const String& newFileName);
+	void addImageToSession(const std::string& fileName);
+	void saveSessionFileAs(const std::string& newFileName);
 
 	void queueTransformation(Transformations* transformation);
 	//void applyTransformation();
 
 	bool isRunning() const;
     void exitProgram();
-
+	void loadSession(const std::string& files);
 
 };

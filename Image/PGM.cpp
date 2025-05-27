@@ -2,21 +2,22 @@
 #include "Image.h"
 #include <fstream>
 #include "../Pixel/Pixel.h"
+#include <string>
 PGM::PGM() : Image(), format(P2_ASCII), pixels(nullptr) {}
 
-PGM::PGM(const String& fileName)
+PGM::PGM(const std::string& fileName)
     : Image(), format(P2_ASCII), pixels(nullptr) {
     load(fileName);
 }
 PGM::PGM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers,
-         const String& _magicNumber, const String& _fileName,
+         const std::string& _magicNumber, const std::string& _fileName,
          Pixel**&& _pixels, Format _format)
     : Image(_width, _height, _maxColourNumbers, _magicNumber, _fileName),
       format(_format),
       pixels(_pixels)
 {}
 PGM::PGM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, 
-         const String& _magicNumber, const String& _fileName,
+         const std::string& _magicNumber, const std::string& _fileName,
          const Pixel* const* _pixels)
     : Image(_width, _height, _maxColourNumbers, _magicNumber, _fileName),
       format(_magicNumber == "P2" ? P2_ASCII : P5_BINARY)
@@ -49,12 +50,12 @@ PGM& PGM::operator=(PGM&& other) noexcept{
     }
     return *this;
 }
-Image* PGM::collage(const Image* second, const String& newFileName, Direction direction) const{
+Image* PGM::collage(const Image* second, const std::string& newFileName, Direction direction) const{
     return second->collageWithPGM(this, newFileName, direction);
 }
-Image* PGM::collageWithPBM(const PBM* second, const String& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
-Image* PGM::collageWithPPM(const PPM* second, const String& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
-Image* PGM::collageWithPGM(const PGM* second, const String& newFileName, Direction d) const {
+Image* PGM::collageWithPBM(const PBM* second, const std::string& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
+Image* PGM::collageWithPPM(const PPM* second, const std::string& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
+Image* PGM::collageWithPGM(const PGM* second, const std::string& newFileName, Direction d) const {
     if (!second) throw std::invalid_argument("Null image provided");
     
     unsigned newWidth = width, newHeight = height;
@@ -192,16 +193,33 @@ void PGM::copy(const PGM& other) {
     pixels = other.pixels; 
 } 
 
-void PGM::load(const String& filePath) {
-    std::ifstream file(filePath.c_str(), format == P5_BINARY ? std::ios::binary : std::ios::in);
-    if (!file.is_open()){throw std::runtime_error("Failed to open PGM file");}
+void PGM::load(const std::string& filePath) {
+    std::ifstream file(filePath.c_str());
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open PGM file");
+    }
     file >> magicNumber;
     if (magicNumber != "P2" && magicNumber != "P5") {throw std::runtime_error("Invalid PGM format");}
     format = (magicNumber == "P2") ? P2_ASCII : P5_BINARY;
     
-    file >> width >> height >> maxColourNumbers;
-    file.ignore(1);
+
+    while (file.peek() == ' ' || file.peek() == '\t' || file.peek() == '\n' || file.peek() == '#') {
+        if (file.peek() == '#') {
+            file.ignore(1024, '\n');
+        } else {
+            file.ignore(1);
+        }
+    }
+    file >> width >> height;
+    if (width == 0 || height == 0) {
+        throw std::runtime_error("Invalid image dimensions");
+    }
+    file >> maxColourNumbers;
+    while (file.peek() == ' ' || file.peek() == '\t' || file.peek() == '\n') {
+        file.ignore(1);
+    }
     free();
+    
     pixels = new Pixel*[height];
     for (unsigned y = 0; y < height; ++y){
         pixels[y] = new Pixel[width];
@@ -235,7 +253,7 @@ void PGM::load(const String& filePath) {
     fileName = filePath;
 }
 
-void PGM::save(const String& filePath) const {
+void PGM::save(const std::string& filePath) const {
     std::ofstream file(filePath.c_str(), format == P5_BINARY ? std::ios::binary : std::ios::out);
     if(!file.is_open()){throw std::runtime_error("Failed to create PGM file");}
     

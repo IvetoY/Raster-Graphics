@@ -6,5 +6,4 @@ class Monochrome: public Transformations{
     public:
     void apply(Image& image) const override;
     Monochrome* clone() const override;
-    String getTransformationName() const override;
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include "../Pixel/Pixel.h"
 #include "Image.h"
+#include <string>
 
 class PPM: public Image{
     enum Format{P3_ASCII, P6_BINARY};
@@ -12,12 +13,12 @@ private:
     void free();
 public:
     PPM();
-    explicit PPM(const String& fileName);
+    explicit PPM(const std::string& fileName);
     PPM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, 
-         const String& _magicNumber, const String& _fileName,
+         const std::string& _magicNumber, const std::string& _fileName,
          const Pixel* const* _pixels);
     PPM(unsigned width, unsigned height, uint8_t maxColourNumbers,
-        const String& magicNumber, const String& fileName,
+        const std::string& magicNumber, const std::string& fileName,
         Pixel**&& pixels, Format _format = P3_ASCII);
 
     PPM(const PPM& other);
@@ -26,14 +27,14 @@ public:
     PPM& operator=(const PPM& other);
     ~PPM() ;
 
-    Image* collage(const Image* second, const String& newFileName, Direction direction) const override;
+    Image* collage(const Image* second, const std::string& newFileName, Direction direction) const override;
 
-    Image* collageWithPBM(const PBM* second, const String& newFileName, Direction direction) const;
-    Image* collageWithPGM(const PGM* second, const String& newFileName, Direction direction) const;
-    Image* collageWithPPM(const PPM* second, const String& newFileName, Direction direction) const;
+    Image* collageWithPBM(const PBM* second, const std::string& newFileName, Direction direction) const;
+    Image* collageWithPGM(const PGM* second, const std::string& newFileName, Direction direction) const;
+    Image* collageWithPPM(const PPM* second, const std::string& newFileName, Direction direction) const;
 
-    void save(const String& filename) const override;
-    void load(const String& filename) override;
+    void save(const std::string& filename) const override;
+    void load(const std::string& filename) override;
 
     void grayscale() override;
 	void negative() override;

@@ -1,21 +1,24 @@
 #pragma once 
 #include "Image.h"
 #include "../Pixel/Pixel.h"
+#include <string>
 
 class PGM: public Image{
-    enum Format{P2_ASCII, P5_BINARY};
-private:
+    enum   Format{P2_ASCII, P5_BINARY};
+    private:
     Format format;
     Pixel** pixels = nullptr;
     void copy(const PGM& other);
     void move(PGM&& other);
     void free();
 public:
+
+
     PGM();
-    explicit PGM(const String& fileName);
-    PGM(unsigned _width, unsigned _height, uint8_t _maxColorNumber, const String& _magicNumber, const String& _fileName,const Pixel* const* _pixels);
+    explicit PGM(const std::string& fileName);
+    PGM(unsigned _width, unsigned _height, uint8_t _maxColorNumber, const std::string& _magicNumber, const std::string& _fileName,const Pixel* const* _pixels);
     PGM(unsigned width, unsigned height, uint8_t maxColorValue,
-        const String& magicNumber, const String& fileName,
+        const std::string& magicNumber, const std::string& fileName,
         Pixel**&& pixelsData, Format fmt = P2_ASCII);
 
     PGM(const PGM& other);
@@ -24,14 +27,14 @@ public:
 	PGM& operator=(PGM&& other) noexcept;
 	~PGM();
 
-    Image* collage(const Image* second, const String& newFileName, Direction direction) const override;
+    Image* collage(const Image* second, const std::string& newFileName, Direction direction) const override;
 
-	Image* collageWithPBM(const PBM* second, const String& newFileName, Direction direction) const ;
-    Image* collageWithPGM(const PGM* second, const String& newFileName, Direction direction) const ;
-    Image* collageWithPPM(const PPM* second, const String& newFileName, Direction direction) const;
+	Image* collageWithPBM(const PBM* second, const std::string& newFileName, Direction direction) const ;
+    Image* collageWithPGM(const PGM* second, const std::string& newFileName, Direction direction) const ;
+    Image* collageWithPPM(const PPM* second, const std::string& newFileName, Direction direction) const;
 
-    void save(const String& path)const override;
-    void load(const String& path) override;
+    void save(const std::string& path)const override;
+    void load(const std::string& path) override;
 
     void grayscale() override;
 	void negative() override;

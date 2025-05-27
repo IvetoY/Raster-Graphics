@@ -15,9 +15,7 @@ for(unsigned y =0; y< image.getHeight();++y){
 
 }
 }
-String Monochrome::getTransformationName() const{
-    return "Monochrime transformation";
-}
+
 Monochrome* Monochrome::clone() const{
     return new Monochrome(*this);
 }

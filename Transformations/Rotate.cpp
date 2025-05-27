@@ -2,6 +2,7 @@
 #include "../Image/PBM.h"
 #include "../Image/PPM.h"
 #include "../Image/PGM.h"
+#include "../Image/ImageFactory.h"
 #include <algorithm>
 #include <stdexcept>
 Rotate::Rotate(Direction _d) : direction(_d) {
@@ -10,7 +11,7 @@ Rotate::Rotate(Direction _d) : direction(_d) {
     }
 }
 
-void Rotate::apply(Image& image) const {
+/*void Rotate::apply(Image& image) const {
     if (direction != left && direction != right) {
         throw std::runtime_error("Invalid rotation direction");
     }
@@ -19,7 +20,7 @@ void Rotate::apply(Image& image) const {
     unsigned height = image.getHeight();
     unsigned newWidth = height;
     unsigned newHeight = width;
-    Image* rotated = image.createNewImage(newWidth, newHeight);
+    Image* rotated = ImageFactory::create();
     
     for (unsigned y = 0; y < height; ++y) {
         for (unsigned x = 0; x < width; ++x) {
@@ -35,11 +36,7 @@ void Rotate::apply(Image& image) const {
     image.swap(*rotated);
     delete rotated;
 }
-
+*/
 Rotate* Rotate::clone() const{
     return new Rotate(*this);
-}
-
-String Rotate::getTransformationName() const {
-    return "Rotate transformation";
 }

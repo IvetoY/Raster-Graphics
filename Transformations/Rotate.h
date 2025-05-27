@@ -7,7 +7,6 @@ enum Direction{left, right};
 explicit Rotate(Direction d);
 void apply(Image& image) const override;
 Rotate* clone() const override;
-String getTransformationName() const override;
 
 Direction direction;
 };

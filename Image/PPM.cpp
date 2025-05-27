@@ -7,14 +7,14 @@
 
 PPM::PPM() : Image(), format(Format::P3_ASCII), pixels(nullptr){}
 PPM::PPM(unsigned _width, unsigned _height, uint8_t _maxColour,
-         const String& _magicNumber, const String& _fileName,
+         const std::string& _magicNumber, const std::string& _fileName,
          Pixel**&& pixels, Format _format)
     : Image(_width, _height, _maxColour, _magicNumber, _fileName),
       format(_format),
       pixels(pixels)
 {}
 PPM::PPM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, 
-         const String& _magicNumber, const String& _fileName,
+         const std::string& _magicNumber, const std::string& _fileName,
          const Pixel* const* _pixels)
     : Image(_width, _height, _maxColourNumbers, _magicNumber, _fileName),
       format(_magicNumber == "P3" ? P3_ASCII : P6_BINARY)
@@ -26,7 +26,7 @@ PPM::PPM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers,
 		}
 	}
 }
-PPM::PPM(const String& fileName):Image(), format(P3_ASCII), pixels(nullptr){load(fileName);}
+PPM::PPM(const std::string& fileName):Image(), format(P3_ASCII), pixels(nullptr){load(fileName);}
 
 PPM& PPM::operator=(const PPM& other){
     if(this!=&other){
@@ -114,11 +114,11 @@ void PPM::negative(){
     }
 }
 
-Image* PPM::collage(const Image* second, const String& newFileName, Direction d)const{
+Image* PPM::collage(const Image* second, const std::string& newFileName, Direction d)const{
     return second->collageWithPPM(this, newFileName, d);
 }
 
-void PPM::save(const String& filename) const{
+void PPM::save(const std::string& filename) const{
     std::ios_base::openmode mode = std::ios::out;
     if (format == P6_BINARY) {
         mode |= std::ios::binary;
@@ -147,11 +147,11 @@ void PPM::save(const String& filename) const{
     }
     file.close();
 }
-Image* PPM::collageWithPBM(const PBM* second, const String& newFileName, Direction d) const{throw std::logic_error("Can't collage different types!");}
+Image* PPM::collageWithPBM(const PBM* second, const std::string& newFileName, Direction d) const{throw std::logic_error("Can't collage different types!");}
 
-Image* PPM::collageWithPGM(const PGM* second, const String& newFileName, Direction d) const{throw std::logic_error("Can't collage different types!");}
+Image* PPM::collageWithPGM(const PGM* second, const std::string& newFileName, Direction d) const{throw std::logic_error("Can't collage different types!");}
 
-Image* PPM::collageWithPPM(const PPM* second, const String& newFileName, Direction d) const{
+Image* PPM::collageWithPPM(const PPM* second, const std::string& newFileName, Direction d) const{
     if(!second){return nullptr;}
     if (strcmp(extractFileExtension(newFileName.c_str()), getFileExtension()) != 0){throw std::runtime_error("Invalid new file name for collage! Must be .ppm!");}
     if (format != second->format){throw std::runtime_error("Cannot collage PPM images with different formats");}
@@ -211,7 +211,7 @@ void PPM::copy(const PPM& other) {
     pixels = other.pixels; 
 } 
 
-void PPM::load(const String& filePath) {
+void PPM::load(const std::string& filePath) {
     std::ifstream file(filePath.c_str(), std::ios::binary);
     if(!file.is_open()){throw std::runtime_error("Failed to open PPM file");}
     file >> magicNumber;

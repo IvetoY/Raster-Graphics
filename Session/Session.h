@@ -23,7 +23,7 @@ public:
     ~Session() ;
     Session(ImageFactory* factory);
     void addImage(Image* image);
-    void loadImage(const String& filename);
+    void loadImage(const std::string& filename);
     void closeImage();
     std::vector<Image*> getImages() const;
     
@@ -32,8 +32,8 @@ public:
     void applyTransformations();
     void undo();
 
-    void save(const String& filename) const;
-    void saveFirstFileAs(const String& newFileName) const;
+    void save(const std::string& filename) const;
+    void saveFirstFileAs(const std::string& newFileName) const;
     void printSessionInfo(std::ostream& out) const;
     void terminate();
 

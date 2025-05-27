@@ -1,6 +1,7 @@
 #include "System.h"
 #include "../Session/Session.h"
 #include <algorithm>
+#include <cstring>
 #include "../Image/ImageFactory.h"
 System& System::getInstance(){
     static System system;
@@ -32,12 +33,12 @@ int System::findSession()const{
     }
     return -1;
 }
-void System::saveSession(const String& filename){
+void System::saveSession(const std::string& filename){
 	if (activeSessionID == -1){throw std::runtime_error("No active sessions!");}
 	int index = findSession();
 	sessions[index]->saveFirstFileAs(filename);
 }
-void System::saveSessionFileAs(const String& newFileName){
+void System::saveSessionFileAs(const std::string& newFileName){
 	if (activeSessionID == -1){throw std::runtime_error("No active sessions!");}
 	int index = findSession();
 	sessions[index]->saveFirstFileAs(newFileName);
@@ -47,7 +48,15 @@ void System::printSessionInfo() const{
 	int index = findSession();
 	sessions[index]->printSessionInfo(std::cout);
 }
-void System::loadSession(const std::vector<String>& files) {
+void System::loadSession(const std::string& files) {
+        int newSessionId = createNewSession();
+        
+            Image* img = ImageFactory::create(files); 
+            sessions[newSessionId]->addImage(img);
+        
+        activeSessionID = newSessionId;
+    }
+void System::loadSession(const std::vector<std::string>& files) {
         int newSessionId = createNewSession();
         for (const auto& file : files) {
             Image* img = ImageFactory::create(file); 
@@ -75,7 +84,7 @@ void System::undo() {
         sessions[currentIdx]->undo();
     }
 }
-void System::addImageToSession(const String& fileName) {
+void System::addImageToSession(const std::string& fileName) {
     int currentIdx = findSession();
     Image* newImage = ImageFactory::create(fileName);
     if (currentIdx != -1) {

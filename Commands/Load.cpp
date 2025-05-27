@@ -1,9 +1,10 @@
 #include "Load.h"
 #include "../System/System.h"
 #include <vector>
-Load::Load(std::vector<String>&& files) : files(std::move(files)){}
-Load::Load(const std::vector<String>& files) : files(files){}
+#include <string>
+Load::Load(std::string&& files) : file(std::move(files)){}
+Load::Load(const std::string& files) : file(files){}
 void Load::apply(System& system) const {
-    system.loadSession(this->files);
+    system.loadSession(this->file);
 }
 Commands* Load::clone() const{return new Load(*this);}

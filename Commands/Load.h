@@ -3,13 +3,14 @@
 #include <vector>
 #include "Commands.h"
 #include "../System/System.h"
+#include <string>
 class Load: public Commands{
     private:
-    std::vector<String> files;
+    std::string file;
     public:
     ~Load() override = default;
-    Load(const std::vector<String>& files);
-	Load(std::vector<String>&& files);
+    Load(const std::string& files);
+	Load(std::string&& files);
     Commands* clone() const override;
     void apply(System& system) const override;
     String getCommandName() const override{return "load";}

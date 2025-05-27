@@ -2,6 +2,7 @@
 #include "../Image/Image.h"
 #include "../Pixel/Pixel.h"
 #include "Grayscale.h"
+#include <cstring>
 void Grayscale::apply(Image& image) const {
     for(unsigned y = 0;y<image.getHeight(); ++y){
         for(unsigned x = 0; x<image.getWidth(); ++x){
@@ -14,4 +15,3 @@ void Grayscale::apply(Image& image) const {
 Grayscale* Grayscale::clone() const{
     return new Grayscale(*this);
 }
-String Grayscale::getTransformationName() const {return "Grayscale transformation";}

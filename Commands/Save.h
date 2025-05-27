@@ -4,10 +4,10 @@
 #include "../Structures/String/String.h"
 class Save: public Commands{
     private:
-    String filename;
+    std::string filename;
     public:
     Save()=default;
-    Save(const String& filename);
+    Save(const std::string& filename);
     Commands* clone() const override;
     void apply(System& system)const override;
     String getCommandName() const override {return "save";}

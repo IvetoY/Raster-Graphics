@@ -5,9 +5,10 @@
 #include "PPM.h"
 #include "../Structures/String/String.h"
 #include <fstream>
+#include <cstring>
 class ImageFactory{
 public:
-    static Image* create(const String& filePath) {
+    static Image* create(const std::string& filePath) {
         std::ifstream file(filePath);
         if (!file){return nullptr;}
         

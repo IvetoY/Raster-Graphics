@@ -13,10 +13,10 @@ private:
 public:
 
     PBM();
-    explicit PBM(const String& fileName);
-    PBM(unsigned _width, unsigned _height, uint8_t _maxColorNumber, const String& _magicNumber, const String& _fileName,const Pixel* const* _pixels);
+    explicit PBM(const std::string& fileName);
+    PBM(unsigned _width, unsigned _height, uint8_t _maxColorNumber, const std::string& _magicNumber, const std::string& _fileName,const Pixel* const* _pixels);
     PBM(unsigned width, unsigned height, uint8_t maxColour,
-        const String& magicNumber, const String& fileName,
+        const std::string& magicNumber, const std::string& fileName,
         Pixel**&& pixels, Format _format = P1_ASCII);
 
     PBM(const PBM& other);
@@ -25,14 +25,14 @@ public:
 	PBM& operator=(PBM&& other) noexcept;
 	~PBM();
 
-    Image* collage(const Image* second, const String& newFileName, Direction direction) const override;
+    Image* collage(const Image* second, const std::string& newFileName, Direction direction) const override;
 
-	Image* collageWithPBM(const PBM* second, const String& newFileName, Direction direction) const;
-    Image* collageWithPGM(const PGM* second, const String& newFileName, Direction direction) const;
-    Image* collageWithPPM(const PPM* second, const String& newFileName, Direction direction) const;
+	Image* collageWithPBM(const PBM* second, const std::string& newFileName, Direction direction) const;
+    Image* collageWithPGM(const PGM* second, const std::string& newFileName, Direction direction) const;
+    Image* collageWithPPM(const PPM* second, const std::string& newFileName, Direction direction) const;
 
-    void save(const String& path)const override;
-    void load(const String& filePath) override;
+    void save(const std::string& path)const override;
+    void load(const std::string& filePath) override;
 
     void grayscale() override;
 	void negative() override;
