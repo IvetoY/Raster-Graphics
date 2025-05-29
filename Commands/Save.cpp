@@ -1,9 +1,9 @@
 #include "Save.h"
 #include "../System/System.h"
 
-Save::Save(const std::string& filename) : filename(filename) {}
+Save::Save() {}
 void Save::apply(System& system) const{
-    system.saveSession(filename);
+    system.saveSession();
 }
 Commands* Save::clone() const{return new Save(*this);}
 

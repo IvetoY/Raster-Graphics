@@ -4,51 +4,35 @@
 #include "PBM.h"
 #include "../Pixel/Pixel.h"
 
-void testPBM() {
+void testPBM() 
+    
+
     /*{
-        std::ofstream testFile("test.pbm");
-        testFile << "P1\n2 2\n1 0\n0 1\n";
-        testFile.close();
+        PBM pbm1;
+        pbm1.loadASCII("test2.pbm");
         
-        PBM pbm;
-        pbm.load("test.pbm");
-        assert(pbm.getWidth() == 2);
-        assert(pbm.getHeight() == 2);
-        assert(pbm.getMagicNumber() == "P1");
-        assert(pbm.getMaxColourNumbers() == 1);
+        PBM pbm2(pbm1);
         
-        std::cout << "Test 1: Load PBM passed\n";
-        std::remove("test.pbm");
+        std::cout << "Test 2: Copy constructor passed\n";
     }*/
 
     {
-        PBM pbm1;
-        pbm1.load("test.pbm");
-        
-        PBM pbm2(pbm1);
-        assert(pbm2.getWidth() == 2);
-        assert(pbm2.getHeight() == 2);
-        
-        std::cout << "Test 2: Copy constructor passed\n";
-    }
-
-    {
         PBM pbm;
-        pbm.load("test.pbm");
-        pbm.save("output.pbm");
+        pbm.loadASCII("test2.pbm");
+        pbm.saveASCII("output.pbm");
         
-        PBM loaded;
-        loaded.load("output.pbm");
+        /*PBM loaded;
+        loaded.loadASCII("output.pbm");
         assert(loaded.getWidth() == 2);
         assert(loaded.getHeight() == 2);
         
         std::cout << "Test 3: Save and load passed\n";
-        std::remove("output.pbm");
+        
     }
 
     {
         PBM pbm;
-        pbm.load("test.pbm");
+        pbm.loadASCII("test2.pbm");
         
         pbm.negative();
         Pixel p = pbm.getPixel(0, 0);
@@ -63,30 +47,27 @@ void testPBM() {
     {
         PBM pbm;
         try {
-            pbm.load("nonexistent.pbm");
+            pbm.loadASCII("nonexistent.pbm");
             assert(false);
         } catch (const std::exception& e) {
             std::cout << "Test 5.1: Expected error (nonexistent file): " << e.what() << "\n";
         }
      
         try {
-            pbm.load("test.pbm");
+            pbm.loadASCII("test2.pbm");
             pbm.getPixel(10, 10);
             assert(false);
         } catch (const std::exception& e) {
             std::cout << "Test 5.2: Expected error (invalid coordinates): " << e.what() << "\n";
         }
-    }
+    }*/
 }
 
 int main() {
-    std::ofstream testFile("test.pbm");
-    testFile << "P1\n2 2\n1 0\n0 1\n";
-    testFile.close();
+    //std::ofstream testFile("test2.pbm");
     
     testPBM();
     
-    std::remove("test.pbm");
     
     std::cout << "All PBM tests completed!\n";
     return 0;

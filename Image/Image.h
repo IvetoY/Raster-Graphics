@@ -37,13 +37,16 @@ class Image{
     unsigned getHeight() const{return height;}
     void setMaxColourValue(uint8_t value) {maxColourNumbers = value;}
     uint8_t getMaxColourNumbers() const {return maxColourNumbers;}
-    const std::string& getFileName() const;
+    virtual const std::string& getFileName() const = 0; 
     virtual const char* getFileExtension() const = 0;
 
     void setFileName(const std::string& name);
 
-    virtual void save(const std::string& path) const = 0;
-    virtual void load(const std::string& filePath) = 0;
+    virtual void saveASCII(const std::string& path) const = 0;
+    virtual void loadASCII(const std::string& filePath) = 0;
+
+    virtual void saveBinary(const std::string& path) const = 0;
+    virtual void loadBinary(const std::string& filePath) = 0;
 
     virtual Image* collage(const Image* second, const std::string& filename, Direction direction) const = 0;
     virtual Image* collageWithPPM(const PPM* ppm, const std::string& newFileName, Direction direction) const = 0;
@@ -62,7 +65,7 @@ class Image{
     virtual Pixel getPixel(unsigned x, unsigned y) const =0;
 
     virtual void setPixel(unsigned x, unsigned y, const Pixel& pixel)=0;
-
+     
     //virtual Image* createNewImage(unsigned width, unsigned height) const = 0;
     //virtual void swap(Image& other) = 0;
 };

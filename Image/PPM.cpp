@@ -3,12 +3,14 @@
 #include <fstream>
 #include "../Pixel/Pixel.h"
 #include <cstring>
+#include <algorithm>
 #include "../Utils/PathHelper.h" 
 void PPM::swap(Image& other) {
         PPM* otherPPM = dynamic_cast<PPM*>(&other);
         if (!otherPPM) {
             throw std::runtime_error("Cannot swap PPM with non-PPM image");
         }
+        std::swap(fileName, otherPPM->fileName);
         std::swap(width, otherPPM->width);
         std::swap(height, otherPPM->height);
         std::swap(pixels, otherPPM->pixels);
@@ -34,7 +36,12 @@ PPM::PPM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers,
 		}
 	}
 }
-PPM::PPM(const std::string& fileName):Image(), format(P3_ASCII), pixels(nullptr){load(fileName);}
+PPM::PPM(const std::string& filePath):Image(), format(P3_ASCII), pixels(nullptr){
+    fileName = filePath;
+    if(format==P3_ASCII){loadASCII(fileName);}
+    else {loadBinary(fileName);}
+    
+}
 
 PPM& PPM::operator=(const PPM& other){
     if(this!=&other){
@@ -125,34 +132,62 @@ void PPM::negative(){
 Image* PPM::collage(const Image* second, const std::string& newFileName, Direction d)const{
     return second->collageWithPPM(this, newFileName, d);
 }
-
-void PPM::save(const std::string& filename) const{
-    std::ios_base::openmode mode = std::ios::out;
-    if (format == P6_BINARY) {
-        mode |= std::ios::binary;
+void PPM::saveBinary(const std::string& filename) const {
+    std::ofstream file(filename.c_str(), std::ios::binary);
+    
+    if (!file) {
+        throw std::runtime_error("Failed to create file: " + filename);
     }
-    std::ofstream file(filename.c_str());
 
-    if (!file){throw std::runtime_error(("Failed to create file: " + filename).c_str());}
+    file << "P6\n";
+    file << width << " " << height << "\n";
+    file << static_cast<int>(maxColourNumbers) << "\n"; 
 
-    file<<magicNumber << std::endl;
-    file<<height<<" "<<width <<std::endl;
-    file<<(uint8_t)maxColourNumbers<<std::endl;
-
-    for(unsigned y=0;y<height;++y){
-        for(unsigned x=0;x<width;++x){
+    for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x) {
             const Pixel& pixel = pixels[y][x];
-            if(format == P3_ASCII){
-                file<<static_cast<int>(pixel.getRed()) << " "
-                <<static_cast<int>(pixel.getGreen()) << " "
-                <<static_cast<int>(pixel.getBlue()) << " ";
-            }
-            else{//P6_BINARY
-                file.write(reinterpret_cast<const char*>(&pixel), sizeof(Pixel));
-            }
+            file << pixel.getRed();
+            file << pixel.getGreen();
+            file << pixel.getBlue();
         }
-        if(format == P3_ASCII) {file<< std::endl;}
     }
+    
+    file.close();
+}
+void PPM::saveASCII(const std::string& filename) const {
+    std::ofstream file(filename);
+    
+    if (!file) {
+        throw std::runtime_error("Failed to create file: " + filename);
+    }
+
+    file << "P3\n";
+    file << width << " " << height << "\n";
+    file << static_cast<int>(maxColourNumbers) << "\n"; 
+    unsigned charsInCurrentLine=0;
+    for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x) 
+         {
+            const Pixel& p = pixels[y][x];
+            std::string rStr = std::to_string(static_cast<int>(p.getRed()));
+            std::string gStr = std::to_string(static_cast<int>(p.getGreen()));
+            std::string bStr = std::to_string(static_cast<int>(p.getBlue()));
+
+            if (charsInCurrentLine + rStr.length() + gStr.length() + bStr.length() + 3 > 70) {
+                file << "\n";
+                charsInCurrentLine = 0;
+            } else if (charsInCurrentLine > 0) {
+                file << " ";
+                charsInCurrentLine++;
+            }
+
+            file << rStr << " " << gStr << " " << bStr;
+            charsInCurrentLine += rStr.length() + gStr.length() + bStr.length() + 2;
+        }
+           
+        file<<"\n";
+    }
+    
     file.close();
 }
 Image* PPM::collageWithPBM(const PBM* second, const std::string& newFileName, Direction d) const{throw std::logic_error("Can't collage different types!");}
@@ -219,13 +254,52 @@ void PPM::copy(const PPM& other) {
     pixels = other.pixels; 
 } 
 
-void PPM::load(const std::string& filePath) {
+void PPM::loadASCII(const std::string& filePath) {
+    std::ifstream file(filePath);
+    if(!file.is_open()){throw std::runtime_error("Failed to open PPM file");}
+    file >> magicNumber;
+    
+    file >> std::ws;
+    while (file.peek() == '#') {
+        file.ignore(1024, '\n');
+        file >> std::ws;
+    }
+    format = P3_ASCII ;
+    unsigned maxValue;
+    file >> width >> height >> maxValue;
+
+    free();
+    pixels = new Pixel*[height];
+    for (unsigned y = 0; y < height; ++y){
+        pixels[y] = new Pixel[width];
+    }
+
+        for (unsigned y = 0; y < height; ++y){
+            for (unsigned x = 0; x < width; ++x) {
+                unsigned r, g, b;
+            
+                file >> r >> g >> b;
+                if (file.fail()){
+                free();
+                throw std::runtime_error("Error reading color values from PPM file");
+                }
+                pixels[y][x] = Pixel{
+                static_cast<uint8_t>(r),
+                static_cast<uint8_t>(g),
+                static_cast<uint8_t>(b)
+            };
+            }
+        }
+        
+    fileName = filePath;
+    maxColourNumbers = static_cast<uint8_t>(maxValue);
+}
+void PPM::loadBinary(const std::string& filePath){
     std::ifstream file(filePath.c_str(), std::ios::binary);
     if(!file.is_open()){throw std::runtime_error("Failed to open PPM file");}
     file >> magicNumber;
-    if(magicNumber != "P3" && magicNumber != "P6"){throw std::runtime_error("Invalid PPM format. Only P3 and P6 are supported!");}
-
-    format = (magicNumber == "P3") ? P3_ASCII : P6_BINARY;
+    
+    format = P6_BINARY ;
     file >> width >> height >> maxColourNumbers;
 
     file >> std::ws;
@@ -239,27 +313,6 @@ void PPM::load(const std::string& filePath) {
         pixels[y] = new Pixel[width];
     }
 
-    if (format == P3_ASCII){
-        for (unsigned y = 0; y < height; ++y){
-            for (unsigned x = 0; x < width; ++x) {
-                int r, g, b;
-                file >> r >> g >> b;
-                if (file.fail()){
-                free();
-                throw std::runtime_error("Error reading color values from PPM file");
-                }
-                
-                if (r < 0 || r > maxColourNumbers || 
-                    g < 0 || g > maxColourNumbers || 
-                    b < 0 || b > maxColourNumbers) {
-                    free();
-                    throw std::runtime_error("Invalid color value in PPM file");
-                }
-                
-                pixels[y][x] = Pixel(static_cast<uint8_t>(r),static_cast<uint8_t>(g),static_cast<uint8_t>(b));
-            }
-        }
-    } else {
         file.ignore(1);
         
         const size_t rowSize = width * 3;
@@ -278,7 +331,7 @@ void PPM::load(const std::string& filePath) {
             }
         }
         delete[] rowBuffer;
-    }
+    this->pixels = pixels;
     fileName = filePath;
 }
 

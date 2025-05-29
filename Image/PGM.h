@@ -33,8 +33,11 @@ public:
     Image* collageWithPGM(const PGM* second, const std::string& newFileName, Direction direction) const ;
     Image* collageWithPPM(const PPM* second, const std::string& newFileName, Direction direction) const;
 
-    void save(const std::string& path)const override;
-    void load(const std::string& path) override;
+    void saveASCII(const std::string& path)const override;
+    void loadASCII(const std::string& filePath) override;
+
+    void saveBinary(const std::string& path)const override;
+    void loadBinary(const std::string& filePath) override;
 
     void grayscale() override;
 	void negative() override;
@@ -49,6 +52,8 @@ public:
 
 	const char* getFileExtension() const {return "pgm";}
     Pixel getPixel(unsigned x, unsigned y) const override;
+
+    const std::string& getFileName() const override {return fileName;}
 
     void setPixel(unsigned x, unsigned y, const Pixel& pixel) override;
 };

@@ -33,20 +33,30 @@ int main() {
         
         if(command == "grayscale") {
             transformation = new Grayscale();
+            transformation->apply(system);
+            delete transformation;
         }
         else if(command == "monochrome") {
             transformation = new Monochrome();
+            transformation->apply(system);
+            delete transformation;
         }
         else if(command == "negative") {
             transformation = new Negative();
+            transformation->apply(system);
+            delete transformation;
         }
         else if(command == "rotate") {
             if(!args.empty()) {
                 if(args == "left") {
                     transformation = new Rotate(Rotate::left);
+                    transformation->apply(system);
+                    delete transformation;
                 } 
                 else if(args == "right") {
                     transformation = new Rotate(Rotate::right);
+                    transformation->apply(system);
+                    delete transformation;
                 }
                 else {
                     std::cerr << "Error: Invalid rotation direction. Use 'left' or 'right'\n";
@@ -120,10 +130,7 @@ int main() {
             std::cerr << "Error: Unknown command '" << command << "'\n";
         }
         
-        if(transformation != nullptr) {
-            transformation->apply(system);
-            delete transformation;
-        }
+        
     }
     
     return 0;

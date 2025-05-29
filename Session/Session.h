@@ -10,7 +10,7 @@ class Image;
 class Session{
 private:
 
-int id = -1;
+int id ;
 static int nextId;
 std::stack<Image*> images;
 std::stack<Transformations*> transformations;
@@ -30,6 +30,9 @@ public:
     std::vector<Image*> getImages() const;
     
 
+    Session(const Session&) = delete;
+    Session& operator=(const Session&) = delete;
+
     void queueTransformation(Transformations* transformation);
     void applyTransformations();
     void undo();
@@ -39,6 +42,7 @@ public:
     void printSessionInfo(std::ostream& out) const;
     void terminate();
 
+    static void resetSessionCounter();
     int getId() const { return id; }
     bool isActive() const { return active; }
     bool hasImages() const { return !images.empty(); }

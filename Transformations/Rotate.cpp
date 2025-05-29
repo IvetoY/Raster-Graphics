@@ -19,23 +19,14 @@ void Rotate::apply(System& system) const {
         const unsigned height = image.getHeight();
         const unsigned newWidth = height;
         const unsigned newHeight = width;
-
-        Image* rotated = image.clone();
-        rotated->setHeight(newHeight);
-        rotated->setWidth(newWidth);
-        for (unsigned y = 0; y < height; ++y) {
-            for (unsigned x = 0; x < width; ++x) {
-                Pixel originalPixel = image.getPixel(x, y);
-                
-                if (direction == left) {
-                    rotated->setPixel(height - 1 - y, x, originalPixel);
-                } else { 
-                    rotated->setPixel(y, width - 1 - x, originalPixel);
-                }
-            }
+        if(direction==left){
+            image.rotateLeft();
         }
-        image.swap(*rotated);
-        delete rotated;
+        else{
+            image.rotateRight();
+        }
+        
+        
     }
 }
 

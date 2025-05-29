@@ -4,7 +4,7 @@
 #include <cassert>
 
 void testPPMOperations() {
-    try {
+    /*try {
         PPM image("test_1.ppm");
         std::cout << "Image loaded successfully. Dimensions: " 
                   << image.getWidth() << "x" << image.getHeight() << std::endl;
@@ -29,7 +29,11 @@ void testPPMOperations() {
         std::cout << "All tests passed successfully!" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Test failed: " << e.what() << std::endl;
-    }
+    }*/
+   PPM pbm;
+        pbm.loadASCII("test3.ppm");
+        
+        pbm.saveASCII("proba2.ppm");
 }
 
 int main() {

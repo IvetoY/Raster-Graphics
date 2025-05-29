@@ -4,17 +4,21 @@
 #include <fstream>
 #include "../Transformations/Grayscale.h"
 #include <stdexcept>
+#include <algorithm>
 void PBM::swap(Image& other) {
         PBM* otherPBM = dynamic_cast<PBM*>(&other);
         if (!otherPBM) {
             throw std::runtime_error("Cannot swap PPM with non-PPM image");
         }
+        std::swap(fileName, otherPBM->fileName);
         std::swap(width, otherPBM->width);
         std::swap(height, otherPBM->height);
         std::swap(pixels, otherPBM->pixels);
 }
 
-PBM::PBM() : Image(), format(P1_ASCII), pixels(nullptr) {}
+PBM::PBM() : Image(), format(P1_ASCII), pixels(nullptr) {
+    
+}
 PBM::PBM(unsigned _width, unsigned _height, uint8_t _maxColorValue,const std::string& _magicNumber, const std::string& _fileName,Pixel**&& pixelsData, Format fmt)
     : Image(_width, _height, _maxColorValue, _magicNumber, _fileName),
       format(fmt),
@@ -34,10 +38,15 @@ PBM::PBM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers, const std
 		}
 	}
 }
-PBM::PBM(const std::string& fileName): Image(), format(P1_ASCII), pixels(nullptr) {load(fileName);}
+PBM::PBM(const std::string& filePath): Image(), format(P1_ASCII), pixels(nullptr) {
+    fileName = filePath;
+    if(format == P1_ASCII) {loadASCII(fileName);}
+    else {loadBinary(fileName);}
+    
+}
 
 PBM::~PBM(){free();}
-PBM::PBM(const PBM& other) : Image(other), format(other.format){copy(other);}
+PBM::PBM(const PBM& other) : Image(other), format(other.format){copy(other); }
 PBM::PBM(PBM&& other) noexcept : Image(std::move(other)), format(other.format){move(std::move(other));}
 PBM& PBM::operator=(const PBM& other){
     if(this!=&other){
@@ -136,11 +145,11 @@ void PBM::negative(){
 
 void PBM::rotateLeft(){
     if(width == 0 || height == 0) {return;}
-    Pixel** rotated = new Pixel*[width];
-    for(unsigned x = 0; x < width; ++x){
-        rotated[x] = new Pixel[height];
-        for(unsigned y = 0; y < height; ++y){
-            rotated[x][y] = pixels[y][width - 1 - x];
+    Pixel** rotated = new Pixel*[height];
+    for(unsigned y = 0; y < height; ++y){
+        rotated[y] = new Pixel[width];
+        for(unsigned x = 0; x < width; ++x){
+            rotated[height - 1 - y][x] = pixels[x][y];
         }
     }
     free();
@@ -149,11 +158,11 @@ void PBM::rotateLeft(){
 }
 
 void PBM::rotateRight(){
-    Pixel** rotated = new Pixel*[width];
-    for(unsigned x = 0; x < width; ++x){
-        rotated[x] = new Pixel[height];
-        for(unsigned y = 0; y < height; ++y){
-            rotated[x][y] = pixels[height - 1 - y][x];
+    Pixel** rotated = new Pixel*[height];
+    for(unsigned y = 0; y < height; ++y){
+        rotated[y] = new Pixel[width];
+        for(unsigned x = 0; x < width; ++x){
+            rotated[y][width - 1 - x] = pixels[x][y];;
         }
     }
     free();
@@ -212,16 +221,21 @@ void PBM::copy(const PBM& other) {
 } 
 
 
-void PBM::load(const std::string& filePath){
-    std::ifstream file(filePath.c_str(), std::ios::binary);
+void PBM::loadASCII(const std::string& filePath){
+    std::ifstream file(filePath.c_str());
     if(!file.is_open()){throw std::runtime_error(("Failed to open PBM file: " + filePath).c_str());}
 
     file >> magicNumber;
-    if(magicNumber != "P1" && magicNumber != "P4"){throw std::runtime_error("Invalid PBM format. Supported: P1 (ASCII), P4 (binary)");}
-    format = (magicNumber == "P1") ? P1_ASCII : P4_BINARY;
+    if(magicNumber=="P1"){format = P1_ASCII;}
     
+    file >> std::ws;
+    while (file.peek() == '#') {
+        file.ignore(1024, '\n');
+        file >> std::ws;
+    }
     file >> width >> height;
     maxColourNumbers = 1; 
+    
     
     file >> std::ws;
     while (file.peek() == '#') {
@@ -235,7 +249,6 @@ void PBM::load(const std::string& filePath){
         pixels[y] = new Pixel[width];
     }
 
-    if(format == P1_ASCII){
         for(unsigned y = 0; y < height; ++y){
             for(unsigned x = 0; x < width; ++x){
                 int value;
@@ -244,13 +257,33 @@ void PBM::load(const std::string& filePath){
                     free();
                     throw std::runtime_error("Error reading PBM data");
                 }
-                uint8_t pixelValue = (value > 0) ? 255 : 0;
+                uint8_t pixelValue = (value > 0) ? 0 : 255;
                 pixels[y][x] = Pixel{pixelValue, pixelValue, pixelValue};
             }
         }
-    } 
-    else{ 
-        file.ignore(1);
+
+
+    fileName = filePath;
+    file.close();
+}
+
+void PBM::loadBinary(const std::string& filePath){
+    std::ifstream file(filePath.c_str(), std::ios::binary);
+    if(!file.is_open()){throw std::runtime_error(("Failed to open PBM file: " + filePath).c_str());}
+
+    file >> magicNumber;
+    if(magicNumber=="P4"){format = P4_BINARY;}
+    file >> width >> height;
+    maxColourNumbers = 1; 
+    file.ignore(1);
+    file >> std::ws;
+    while (file.peek() == '#') {
+        file.ignore(1024, '\n');
+    }
+    file >> std::ws;
+
+    free();
+    
         const size_t bytesPerRow = (width + 7) / 8;
         char* rowBuffer = new char[bytesPerRow];
         
@@ -271,30 +304,46 @@ void PBM::load(const std::string& filePath){
                 pixels[y][x] = Pixel{value, value, value};
             }
         }
-        
+        fileName = filePath;
         delete[] rowBuffer;
-    }
+        file.close();
+}
+void PBM::saveASCII(const std::string& filePath) const {
+    
+    std::ofstream file(filePath);
 
-    fileName = filePath;
+    if(!file.is_open()){
+        throw std::runtime_error(("Failed to create PBM file: " + filePath).c_str());
+    }
+    file << "P1\n" << width << " " << height << "\n";
+
+    for(unsigned y = 0; y < height; ++y){
+        for(unsigned x = 0; x < width; ++x){
+            bool isBlack = (pixels[y][x].getRed() == 0 && 
+                           pixels[y][x].getGreen() == 0 && 
+                           pixels[y][x].getBlue() == 0);
+            file << (isBlack ? "1" : "0");
+            if (x < width - 1) {
+                file << " ";
+            }
+        }
+        file << "\n";
+    }
+    file.flush();
+     if (!file.good()) {
+        throw std::runtime_error("Failed to write PBM data.");
+    }
+    file.close();
 }
 
-void PBM::save(const std::string& filePath) const {
-    std::ofstream file(filePath.c_str(), (format == P4_BINARY) ? std::ios::binary : std::ios::out);
-    if(!file.is_open()){throw std::runtime_error(("Failed to create PBM file: " + filePath).c_str());}
-    file << (format == P1_ASCII ? "P1\n" : "P4\n")
-         << width << " " << height << "\n";
+void PBM::saveBinary(const std::string& filePath) const{
+    std::ofstream file(filePath.c_str(), std::ios::binary);
 
-    if(format == P1_ASCII){
-        for(unsigned y = 0; y < height; ++y){
-            for(unsigned x = 0; x < width; ++x){
-                bool isWhite = (pixels[y][x].getRed() > 0 || pixels[y][x].getGreen() > 0 || pixels[y][x].getBlue() > 0);
-                file << (isWhite ? "1 " : "0 ");
-            }
-            file << "\n";
-        }
-    } 
-    else{ 
-        const size_t bytesPerRow = (width + 7) / 8;
+    if(!file.is_open()){
+        throw std::runtime_error(("Failed to create PBM file: " + filePath).c_str());
+    }
+    file << "P1\n" << width << " " << height << "\n";
+    const size_t bytesPerRow = (width + 7) / 8;
         char* rowBuffer = new char[bytesPerRow]();
         try {
             for(unsigned y = 0; y < height; ++y){
@@ -316,10 +365,10 @@ void PBM::save(const std::string& filePath) const {
             throw;
         }
         
+        
         delete[] rowBuffer;
-    }
+        file.close();
 }
-
 Pixel PBM::getPixel(unsigned x, unsigned y) const {
     if(x >= width || y >= height){throw std::out_of_range("Invalid pixel coordinates!");}
     return pixels[y][x];

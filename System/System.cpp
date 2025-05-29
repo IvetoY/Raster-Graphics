@@ -3,21 +3,29 @@
 #include <algorithm>
 #include <cstring>
 #include "../Image/ImageFactory.h"
+System* System::instance = nullptr;
 System& System::getInstance(){
     static System system;
     return system;
 }
-int System::createNewSession() {
-    Session* newSession = new Session();
-    sessions.push_back(newSession);
-    return sessionCounter++;
-}
+System::System() : activeSessionID(-1), running(true) {}
 
 System::~System() {
     for (Session* session : sessions) {
         delete session;
     }
     sessions.clear();
+}
+
+int System::createNewSession() {
+    Session* newSession = new Session();
+    sessions.push_back(newSession);
+    
+    if (activeSessionID == -1) {
+        activeSessionID = newSession->getId();
+    }
+    
+    return newSession->getId();
 }
 void System::queueTransformation(Transformations* transformation) {
     if (activeSessionID == -1) {throw std::runtime_error("No active sessions!");}
@@ -35,28 +43,78 @@ int System::findSession()const{
 }
 
 
-void System::saveSession(const std::string& filename){
-	if (activeSessionID == -1){throw std::runtime_error("No active sessions!");}
-	int index = findSession();
-	sessions[index]->saveFirstFileAs(filename);
+void System::saveSession() {
+    if (activeSessionID == -1) {
+        throw std::runtime_error("No active sessions!");
+    }
+    
+    int index = findSession();
+    if (index == -1) {
+        throw std::runtime_error("Current session not found!");
+    }
+
+    std::vector<Image*> sessionImages = sessions[index]->getImages();
+    if (sessionImages.empty()) {
+        throw std::runtime_error("No images to save in current session!");
+    }
+    for (size_t i = 0; i < sessionImages.size(); ++i) {
+        try {
+            std::string file = sessionImages[i]->getFileName();
+            
+            if (file.empty()) {
+                throw std::runtime_error("Image has no original filename");
+            }
+
+            if (sessionImages[i]->getMagicNumber() == "P4" || 
+                sessionImages[i]->getMagicNumber() == "P5" ||
+                sessionImages[i]->getMagicNumber() == "P6") {
+                sessionImages[i]->saveBinary(file);
+            } else {
+                sessionImages[i]->saveASCII(file);
+            }
+            
+            std::cout << "Successfully saved: " << file << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Failed to save image " << i+1 << ": " << e.what() << std::endl;
+        }
+    }
 }
 void System::saveSessionFileAs(const std::string& newFileName){
 	if (activeSessionID == -1){throw std::runtime_error("No active sessions!");}
 	int index = findSession();
 	sessions[index]->saveFirstFileAs(newFileName);
 }
-void System::printSessionInfo() const{
-	if (activeSessionID == -1){throw std::runtime_error("No active sessions!");}
-	int index = findSession();
-	sessions[index]->printSessionInfo(std::cout);
+void System::printSessionInfo() const {
+    if (activeSessionID == -1) {
+        throw std::runtime_error("No active sessions!");
+    }
+    
+    int index = findSession();
+    if (index == -1) {
+        throw std::runtime_error("Current session not found!");
+    }
+    
+    std::cout << "=== System Session Info ===\n";
+    sessions[index]->printSessionInfo(std::cout);
+    std::cout << "Total sessions: " << sessions.size() << "\n";
+    std::cout << "Active session ID: " << activeSessionID << "\n";
+    std::cout << "=========================\n";
 }
-void System::loadSession(const std::string& files) {
-        int newSessionId = createNewSession();
+void System::loadSession(const std::string& file) {
+    std::ifstream testFile(file);
+    if (!testFile.is_open()) {
+        throw std::runtime_error(("File does not exist or cannot be opened: " + file).c_str());
+    }
+    testFile.close();
+    int newSessionId = createNewSession();
+    Session* newSession = sessions.back();
+    
+        Image* img = ImageFactory::create(file);
         
-            Image* img = ImageFactory::create(files); 
-            sessions[newSessionId]->addImage(img);
-        
+        newSession->addImage(img);
         activeSessionID = newSessionId;
+    
+
     }
 void System::loadSession(const std::vector<std::string>& files) {
         int newSessionId = createNewSession();
@@ -124,6 +182,8 @@ void System::closeSession() {
     if (index == -1) {
         throw std::runtime_error("Current session not found!");
     }
+
+    int closingId = activeSessionID;
     delete sessions[index];
     sessions.erase(sessions.begin() + index);
 
@@ -131,6 +191,10 @@ void System::closeSession() {
         activeSessionID = -1;
     } else {
         activeSessionID = sessions[0]->getId();
+    }
+    std::cout << "Closed session with ID " << closingId << "\n";
+    if (activeSessionID != -1) {
+        std::cout << "New active session ID: " << activeSessionID << "\n";
     }
 }
 

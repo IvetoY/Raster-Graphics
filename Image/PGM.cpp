@@ -3,11 +3,13 @@
 #include <fstream>
 #include "../Pixel/Pixel.h"
 #include <string>
+#include <algorithm>
 void PGM::swap(Image& other) {
         PGM* otherPGM = dynamic_cast<PGM*>(&other);
         if (!otherPGM) {
             throw std::runtime_error("Cannot swap PPM with non-PPM image");
         }
+        std::swap(fileName, otherPGM->fileName);
         std::swap(width, otherPGM->width);
         std::swap(height, otherPGM->height);
         std::swap(pixels, otherPGM->pixels);
@@ -15,9 +17,12 @@ void PGM::swap(Image& other) {
 
 PGM::PGM() : Image(), format(P2_ASCII), pixels(nullptr) {}
 
-PGM::PGM(const std::string& fileName)
+PGM::PGM(const std::string& filePath)
     : Image(), format(P2_ASCII), pixels(nullptr) {
-    load(fileName);
+        fileName = filePath;
+    if(format == P2_ASCII) {loadASCII(fileName);}
+    else {loadBinary(fileName);}
+    
 }
 PGM::PGM(unsigned _width, unsigned _height, uint8_t _maxColourNumbers,
          const std::string& _magicNumber, const std::string& _fileName,
@@ -203,16 +208,14 @@ void PGM::copy(const PGM& other) {
     pixels = other.pixels; 
 } 
 
-void PGM::load(const std::string& filePath) {
-    std::ifstream file(filePath.c_str());
+void PGM::loadASCII(const std::string& filePath) {
+    std::ifstream file(filePath);
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open PGM file");
     }
     file >> magicNumber;
-    if (magicNumber != "P2" && magicNumber != "P5") {throw std::runtime_error("Invalid PGM format");}
-    format = (magicNumber == "P2") ? P2_ASCII : P5_BINARY;
+    format = P2_ASCII;
     
-
     while (file.peek() == ' ' || file.peek() == '\t' || file.peek() == '\n' || file.peek() == '#') {
         if (file.peek() == '#') {
             file.ignore(1024, '\n');
@@ -221,13 +224,9 @@ void PGM::load(const std::string& filePath) {
         }
     }
     file >> width >> height;
-    if (width == 0 || height == 0) {
-        throw std::runtime_error("Invalid image dimensions");
-    }
-    file >> maxColourNumbers;
-    while (file.peek() == ' ' || file.peek() == '\t' || file.peek() == '\n') {
-        file.ignore(1);
-    }
+    unsigned maxValue;
+    file >> maxValue;
+    
     free();
     
     pixels = new Pixel*[height];
@@ -235,20 +234,39 @@ void PGM::load(const std::string& filePath) {
         pixels[y] = new Pixel[width];
     }
 
-
-    if (format == P2_ASCII){
         for (unsigned y = 0; y < height; ++y){
             for (unsigned x = 0; x < width; ++x){
                 int value;
                 file >> value;
-                uint8_t gray = static_cast<uint8_t>(value);
-                pixels[y][x].setRed(gray);
-                pixels[y][x].setGreen(gray);
-                pixels[y][x].setBlue(gray);
+                uint8_t gray = static_cast<uint8_t>(255 * value / maxValue);
+                pixels[y][x] = Pixel(gray, gray, gray);
             }
         }
-    } else { // P5_BINARY
-        uint8_t* buffer = new uint8_t[width];
+        maxColourNumbers = static_cast<uint8_t>(maxValue);
+        file.close();
+}
+void PGM::loadBinary(const std::string& filePath){
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open PGM file");
+    }
+    file >> magicNumber;
+    format = (magicNumber == "P2") ? P2_ASCII : P5_BINARY;
+    
+    while (file.peek() == ' ' || file.peek() == '\t' || file.peek() == '\n' || file.peek() == '#') {
+        if (file.peek() == '#') {
+            file.ignore(1024, '\n');
+        } else {
+            file.ignore(1);
+        }
+    }
+    file >> width >> height;
+    file >> maxColourNumbers;
+    while (file.peek() == ' ' || file.peek() == '\t' || file.peek() == '\n') {
+        file.ignore(1);
+    }
+    free();
+    uint8_t* buffer = new uint8_t[width];
         for (unsigned y = 0; y < height; ++y) {
             file.read(reinterpret_cast<char*>(buffer), width);
             for (unsigned x = 0; x < width; ++x) {
@@ -257,49 +275,69 @@ void PGM::load(const std::string& filePath) {
                 pixels[y][x].setBlue(buffer[x]);
             }
         }
+        this->pixels = pixels;
         delete[] buffer;
-    }
 
-    fileName = filePath;
+        file.close();
 }
 
-void PGM::save(const std::string& filePath) const {
-    std::ofstream file(filePath.c_str(), format == P5_BINARY ? std::ios::binary : std::ios::out);
+
+void PGM::saveASCII(const std::string& filePath) const {
+    std::ofstream file(filePath);
     if(!file.is_open()){throw std::runtime_error("Failed to create PGM file");}
     
-    file << magicNumber << "\n"
+    file << "P2\n"
          << width << " " << height << "\n"
          << static_cast<int>(maxColourNumbers) << "\n";
     
-    if(format == P2_ASCII){
-        for(unsigned y = 0; y < height; ++y){
-            for(unsigned x = 0; x < width; ++x) {
-                uint8_t gray = static_cast<uint8_t>(
-                    0.299 * pixels[y][x].getRed() + 
-                    0.587 * pixels[y][x].getGreen() + 
-                    0.114 * pixels[y][x].getBlue()
-                );
-                file << static_cast<int>(gray) << " ";
+        const unsigned max_line_length = 70;
+        unsigned current_line_length = 0;
+
+        for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x) {
+            uint8_t gray = pixels[y][x].getRed();
+            int value = static_cast<int>(gray);
+            std::string valueStr = std::to_string(value);
+
+            if (current_line_length + valueStr.length() + 1 > max_line_length) {
+                file << "\n";
+                current_line_length = 0;
+            } else if (current_line_length > 0) {
+                file << " ";
+                current_line_length++;
             }
-            file << "\n";
+            
+            file << valueStr;
+            current_line_length += valueStr.length();
         }
-    } 
-    else { // P5_BINARY
-        uint8_t* buffer = new uint8_t[width];
+        file << "\n";
+        current_line_length = 0;
+    }
+    
+        file.close();
+    }
+
+void PGM::saveBinary(const std::string& filePath) const{
+    std::ofstream file(filePath, std::ios::binary);
+    if(!file.is_open()){throw std::runtime_error("Failed to create PGM file");}
+    
+    file << "P5\n" << width << " " << height << "\n" << maxColourNumbers << "\n";
+    uint8_t* buffer = new uint8_t[width];
         for (unsigned y = 0; y < height; ++y){
             for(unsigned x = 0; x < width; ++x){
-                buffer[x] = static_cast<uint8_t>(
-                    0.299 * pixels[y][x].getRed() + 
-                    0.587 * pixels[y][x].getGreen() + 
-                    0.114 * pixels[y][x].getBlue()
-                );
+                buffer[x]= static_cast<uint8_t>(std::min(maxColourNumbers,
+    static_cast<uint8_t>(0.299 * pixels[y][x].getRed() + 
+                     0.587 * pixels[y][x].getGreen() + 
+                     0.114 * pixels[y][x].getBlue())
+));;
             }
             file.write(reinterpret_cast<const char*>(buffer), width);
         }
+        file.flush();
+        file.close();
         delete[] buffer;
-    }
+        
 }
-
 Pixel PGM::getPixel(unsigned x, unsigned y) const {
     if (x >= width || y >= height){throw std::out_of_range("Invalid pixel coordinates!");}
     return pixels[y][x];

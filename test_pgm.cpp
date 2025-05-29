@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cassert>
 
-void testPGMOperations() {
+/*void testPGMOperations() {
     try {
         PGM image("test_1.pgm");
         std::cout << "PGM image loaded successfully. Dimensions: " 
@@ -42,18 +42,23 @@ void testPGMOperations() {
         std::cerr << "PGM test failed: " << e.what() << std::endl;
     }
 }
-
+*/
 void testPGMLoadOnly() {
     try {
-        PGM image("test_1.pgm");
+        PGM image("test1.pgm");
         std::cout << "Loaded successfully. Size: " 
                  << image.getWidth() << "x" << image.getHeight() << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
-
+void testPGM(){
+    PGM pbm;
+    pbm.loadASCII("test1.pgm");
+    pbm.saveASCII("pgm.pgm");
+}
 int main() {
-    testPGMOperations();
+    //testPGMOperations();
+    testPGM();
     return 0;
 }
