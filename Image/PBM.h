@@ -40,6 +40,7 @@ public:
     void grayscale() override;
 	void negative() override;
 	void monochrome()override;
+    
 	void rotateLeft() override;
 	void rotateRight() override;
 

@@ -47,20 +47,15 @@ int main() {
             delete transformation;
         }
         else if(command == "rotate") {
-            if(!args.empty()) {
-                if(args == "left") {
-                    transformation = new Rotate(Rotate::left);
-                    transformation->apply(system);
-                    delete transformation;
-                } 
-                else if(args == "right") {
-                    transformation = new Rotate(Rotate::right);
-                    transformation->apply(system);
-                    delete transformation;
-                }
-                else {
-                    std::cerr << "Error: Invalid rotation direction. Use 'left' or 'right'\n";
-                }
+            if (!args.empty()) {
+        try {
+            Rotate::Direction dir = (args == "left") ? Rotate::left : Rotate::right;
+            transformation = new Rotate(dir);
+            transformation->apply(system);
+            delete transformation;
+        } catch (const std::exception& e) {
+            std::cerr << "Rotation error: " << e.what() << "\n";
+        }
             }
             else {
                 std::cerr << "Error: Missing rotation direction\n";

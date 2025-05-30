@@ -59,6 +59,7 @@ class Image{
     virtual void grayscale() = 0;
 	virtual void negative() = 0;
 	virtual void monochrome() = 0;
+    
 	virtual void rotateLeft() = 0;
 	virtual void rotateRight() = 0;
 

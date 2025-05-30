@@ -19,7 +19,10 @@ void testPBM()
     {
         PBM pbm;
         pbm.loadASCII("test2.pbm");
+        //pbm.rotateLeft();
+        pbm.rotateRight();
         pbm.saveASCII("output.pbm");
+        
         
         /*PBM loaded;
         loaded.loadASCII("output.pbm");

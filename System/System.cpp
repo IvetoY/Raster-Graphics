@@ -101,15 +101,11 @@ void System::printSessionInfo() const {
     std::cout << "=========================\n";
 }
 void System::loadSession(const std::string& file) {
-    std::ifstream testFile(file);
-    if (!testFile.is_open()) {
-        throw std::runtime_error(("File does not exist or cannot be opened: " + file).c_str());
-    }
-    testFile.close();
+    
     int newSessionId = createNewSession();
     Session* newSession = sessions.back();
-    
-        Image* img = ImageFactory::create(file);
+        Image* img = nullptr;
+        img = ImageFactory::create(file); 
         
         newSession->addImage(img);
         activeSessionID = newSessionId;
@@ -119,7 +115,8 @@ void System::loadSession(const std::string& file) {
 void System::loadSession(const std::vector<std::string>& files) {
         int newSessionId = createNewSession();
         for (const auto& file : files) {
-            Image* img = ImageFactory::create(file); 
+            Image* img = nullptr;
+            img = ImageFactory::create(file); 
             sessions[newSessionId]->addImage(img);
         }
         activeSessionID = newSessionId;

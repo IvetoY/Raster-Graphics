@@ -8,19 +8,24 @@ class Transformations;
 class System{
 private:
 	static System* instance;
-	std::vector<Image> images;
+	std::vector<Image*> images;
     std::vector<Session*> sessions;
 	int activeSessionID = -1;
 	bool running = true;
 	System();
-	int findSession() const;
+	
 public:
-
+	int findSession() const;
 	static System& getInstance();
 	~System();
 
-	std::vector<Image>& getImages() { return images; }
-    const std::vector<Image>& getImages() const { return images; }
+	std::vector<Image*>& getImages() { return images; }
+    const std::vector<Image*>& getImages() const { return images; }
+
+	std::vector<Session*>& getSessions() { return sessions; }
+    const std::vector<Session*>& getSessions() const { return sessions; }
+
+	int getActiveSessionId() {return activeSessionID;}
 	
 	System(const System&) = delete;
 	System& operator=(const System&) = delete;

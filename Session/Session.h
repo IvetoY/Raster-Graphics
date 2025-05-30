@@ -12,11 +12,12 @@ private:
 
 int id ;
 static int nextId;
-std::stack<Image*> images;
-std::stack<Transformations*> transformations;
-std::stack<Image*> history;
+std::vector<Image*> images;
+std::vector<Transformations*> transformations;
+std::vector<std::vector<Image*>> history;
 bool active = true;
 ImageFactory* imageFactory;
+std::vector<Image*> cloneImages(const std::vector<Image*>& source);
 void clearImages();
 void clearTransformations();
 void clearHistory();

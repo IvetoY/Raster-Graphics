@@ -5,6 +5,7 @@
 #include "../Image/ImageFactory.h"
 #include <algorithm>
 #include <stdexcept>
+#include "../Session/Session.h"
 #include "../System/System.h"
 Rotate::Rotate(Direction _d) : direction(_d) {
     if(_d!=left && _d!=right){
@@ -12,22 +13,19 @@ Rotate::Rotate(Direction _d) : direction(_d) {
     }
 }
 void Rotate::apply(System& system) const {
-    auto& images = system.getImages();
-    
-    for (auto& image : images) {
-        const unsigned width = image.getWidth();
-        const unsigned height = image.getHeight();
-        const unsigned newWidth = height;
-        const unsigned newHeight = width;
-        if(direction==left){
-            image.rotateLeft();
+    auto& sessions = system.getSessions();
+    int activeSessionID = system.getActiveSessionId();
+
+    for (Session* session : sessions) {
+        if (session->getId() == activeSessionID) {
+            for (Image* img : session->getImages()) {
+                if (direction == left) img->rotateLeft();
+                else img->rotateRight();
+            }
+            return;
         }
-        else{
-            image.rotateRight();
-        }
-        
-        
     }
+    throw std::runtime_error("Active session not found!");
 }
 
 Rotate* Rotate::clone() const{

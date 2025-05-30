@@ -144,30 +144,39 @@ void PBM::negative(){
 }
 
 void PBM::rotateLeft(){
-    if(width == 0 || height == 0) {return;}
-    Pixel** rotated = new Pixel*[height];
-    for(unsigned y = 0; y < height; ++y){
-        rotated[y] = new Pixel[width];
-        for(unsigned x = 0; x < width; ++x){
-            rotated[height - 1 - y][x] = pixels[x][y];
+    if (!pixels || width == 0 || height == 0) return;
+
+    Pixel** rotated = new Pixel*[width];
+    for (unsigned x = 0; x < width; ++x) {
+        rotated[x] = new Pixel[height];
+    }
+
+    for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x) {
+            rotated[x][y] = pixels[y][width - 1 - x];
         }
     }
     free();
-    std::swap(width, height);
     pixels = rotated;
+    std::swap(width, height);
 }
 
 void PBM::rotateRight(){
-    Pixel** rotated = new Pixel*[height];
-    for(unsigned y = 0; y < height; ++y){
-        rotated[y] = new Pixel[width];
-        for(unsigned x = 0; x < width; ++x){
-            rotated[y][width - 1 - x] = pixels[x][y];;
+    if (!pixels || width == 0 || height == 0) return;
+
+    Pixel** rotated = new Pixel*[width];
+    for (unsigned x = 0; x < width; ++x) {
+        rotated[x] = new Pixel[height];
+    }
+
+    for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x) {
+            rotated[x][height - 1 - y] = pixels[y][x];
         }
     }
     free();
-    std::swap(width, height);
     pixels = rotated;
+    std::swap(width, height);
 }
 PBM* PBM::clone() const{return new PBM(*this);}
 void PBM::free(){
@@ -262,7 +271,7 @@ void PBM::loadASCII(const std::string& filePath){
             }
         }
 
-
+    this->pixels = pixels;
     fileName = filePath;
     file.close();
 }

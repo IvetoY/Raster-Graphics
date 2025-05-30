@@ -147,30 +147,43 @@ void PGM::negative() {
         }
     }
 }
-void PGM::rotateLeft() {
+
+void PGM::rotateLeft(){
+    if (!pixels || width == 0 || height == 0) return;
+
     Pixel** rotated = new Pixel*[width];
-    for(unsigned x = 0; x < width; ++x){
+    for (unsigned x = 0; x < width; ++x) {
         rotated[x] = new Pixel[height];
-        for(unsigned y = 0; y < height; ++y){
+    }
+
+    for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x) {
             rotated[x][y] = pixels[y][width - 1 - x];
         }
     }
     free();
-    std::swap(width, height);
     pixels = rotated;
+    std::swap(width, height);
 }
+
 void PGM::rotateRight(){
+    if (!pixels || width == 0 || height == 0) return;
+
     Pixel** rotated = new Pixel*[width];
-    for(unsigned x = 0; x < width; ++x){
+    for (unsigned x = 0; x < width; ++x) {
         rotated[x] = new Pixel[height];
-        for(unsigned y = 0; y < height; ++y){
-            rotated[x][y] = pixels[height - 1 - y][x];
+    }
+
+    for (unsigned y = 0; y < height; ++y) {
+        for (unsigned x = 0; x < width; ++x) {
+            rotated[x][height - 1 - y] = pixels[y][x];
         }
     }
     free();
-    std::swap(width, height);
     pixels = rotated;
+    std::swap(width, height);
 }
+
 PGM* PGM::clone() const{return new PGM(*this);}
 void PGM::free(){
     if (pixels != nullptr){

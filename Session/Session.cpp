@@ -1,7 +1,7 @@
 #include "Session.h"
 #include <stdexcept>
 #include <fstream>
-#include <stack>
+#include <vector>
 #include <algorithm>
 #include <filesystem>
 int Session::nextId = 1;
@@ -14,34 +14,39 @@ Session::~Session() {
     clearHistory();
 }
 void Session::clearImages() {
-    while (!images.empty()) {
-        delete images.top();
-        images.pop();
+    for (Image* img : images) {
+        delete img;
     }
+    images.clear();
 }
 
 void Session::clearTransformations(){
-    while (!transformations.empty()) {
-        delete transformations.top();
-        transformations.pop();
+    for (Transformations* trans : transformations) {
+        delete trans;
     }
+    transformations.clear();
 }
 
 void Session::clearHistory(){
-    while (!history.empty()) {
-        delete history.top();
-        history.pop();
+   for (auto& historyEntry : history) {
+        for (Image* img : historyEntry) {
+            delete img;
+        }
     }
+    history.clear();
 }
 void Session::addImage(Image* image) {
     if (!image){throw std::invalid_argument("Image pointer is null");}
-
-    if (!images.empty()){
-        history.push(images.top()->clone());
-    }
-    
-    images.push(image);
+    history.push_back(cloneImages(images));
+    images.push_back(image);
 }
+std::vector<Image*> Session::cloneImages(const std::vector<Image*>& source) {
+        std::vector<Image*> copies;
+        for (Image* img : source) {
+            copies.push_back(img->clone());
+        }
+        return copies;
+    }
 void Session::loadImage(const std::string& filename) {
     Image* newImage = ImageFactory::create(filename);
     try {
@@ -53,56 +58,44 @@ void Session::loadImage(const std::string& filename) {
 }
 
 void Session::closeImage() {
-    if (images.empty()) {throw std::runtime_error("No images to close");}
-    
-    if (images.size() > 1) {
-        Image* temp = images.top();
-        images.pop();
-        history.push(images.top()->clone());
-        images.push(temp);
+    if (images.empty()) {
+        throw std::runtime_error("No images to close");
     }
-
-    delete images.top();
-    images.pop();
+    
+    history.push_back(cloneImages(images));
+    
+    delete images.back();
+    images.pop_back();
 }
 
 std::vector<Image*> Session::getImages() const {
-    std::vector<Image*> result;
-    std::stack<Image*> temp = images;
-    
-    while (!temp.empty()) {
-        if (temp.top() != nullptr) {
-            result.push_back(temp.top());
-        }
-        temp.pop();
-    }
-    std::reverse(result.begin(), result.end());
-    return result;
+    return images;
 }
 void Session::queueTransformation(Transformations* transformation) {
     if (!transformation) {throw std::invalid_argument("Transformation pointer is null");}
-    transformations.push(transformation);
+    transformations.push_back(transformation);
 }
 
 void Session::undo() {
     if (history.empty()) {throw std::runtime_error("Nothing to undo");}
     
-    if(!images.empty()){
-        delete images.top();
-        images.pop();
+    clearImages();
+    
+    images = cloneImages(history.back());
+    for (Image* img : history.back()) {
+        delete img;
     }
-    images.push(history.top());
-    history.pop();
+    history.pop_back();
 }
 
 void Session::save(const std::string& filename) const {
     if(images.empty()){throw std::runtime_error("No images to save");}
     
-    const std::string& magic = images.top()->getMagicNumber();
+    const std::string& magic = images.back()->getMagicNumber();
     if (magic == "P1" || magic == "P2" || magic == "P3") {
-        images.top()->saveASCII(filename);
+        images.back()->saveASCII(filename);
     } else {
-        images.top()->saveBinary(filename);
+        images.back()->saveBinary(filename);
     }
 }
 
@@ -111,22 +104,12 @@ void Session::saveFirstFileAs(const std::string& newFileName) const {
         throw std::runtime_error("No images in session");
     }
     
-    
-    std::stack<Image*> temp = images;
-    std::stack<Image*> reversed;
-    while (!temp.empty()) {
-        reversed.push(temp.top());
-        temp.pop();
-    }
-    
-    if (!reversed.empty()) {
-        Image* firstImage = reversed.top();
-        const std::string& magic = firstImage->getMagicNumber();
-        if (magic == "P1" || magic == "P2" || magic == "P3") {
-            firstImage->saveASCII(newFileName);
-        } else {
-            firstImage->saveBinary(newFileName);
-        }
+    Image* firstImage = images.front();
+    const std::string& magic = firstImage->getMagicNumber();
+    if (magic == "P1" || magic == "P2" || magic == "P3") {
+        firstImage->saveASCII(newFileName);
+    } else {
+        firstImage->saveBinary(newFileName);
     }
 }
 
