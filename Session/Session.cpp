@@ -91,11 +91,14 @@ void Session::undo() {
 void Session::save(const std::string& filename) const {
     if(images.empty()){throw std::runtime_error("No images to save");}
     
-    const std::string& magic = images.back()->getMagicNumber();
-    if (magic == "P1" || magic == "P2" || magic == "P3") {
-        images.back()->saveASCII(filename);
-    } else {
-        images.back()->saveBinary(filename);
+    for (Image* img : images) {
+        std::cout << "DEBUG: Saving image: " << img->getFileName() << std::endl;
+        const std::string& magic = img->getMagicNumber();
+        if (magic == "P1" || magic == "P2" || magic == "P3") {
+            img->saveASCII(img->getFileName());
+        } else {
+            img->saveBinary(img->getFileName());
+        }
     }
 }
 

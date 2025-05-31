@@ -6,10 +6,11 @@
 #include <cstring>
 #include <string>
 #include <utility>
+#include "../Commands/Direction.h"
 class PPM;
 class PBM;
 class PGM;
-enum class Direction{HORIZONTAL, VERTICAL};
+
 class Image{
     protected:
     unsigned width;

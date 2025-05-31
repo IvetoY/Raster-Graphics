@@ -16,3 +16,7 @@ const char* extractFileExtension(const char* filePath){
     if(filePathLength == 0){return "";}
     return iterator;
 }
+
+std::string normalizePath(const std::string& path) {
+    return std::filesystem::path(path).lexically_normal().string();
+}

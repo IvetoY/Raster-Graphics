@@ -15,10 +15,13 @@ private:
 	System();
 	
 public:
+Session* getCurrentSession();
 	int findSession() const;
 	static System& getInstance();
 	~System();
 
+	Image* findImageInCurrentSession(const std::string& filename) const;
+    std::vector<Image*> getCurrentSessionImages() const;
 	std::vector<Image*>& getImages() { return images; }
     const std::vector<Image*>& getImages() const { return images; }
 

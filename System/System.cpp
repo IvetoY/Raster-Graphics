@@ -121,7 +121,28 @@ void System::loadSession(const std::vector<std::string>& files) {
         }
         activeSessionID = newSessionId;
     }
+Image* System::findImageInCurrentSession(const std::string& filename) const {
+    if (activeSessionID == -1) return nullptr;
+    
+    int index = findSession();
+    if (index == -1) return nullptr;
+    
+    for (Image* img : sessions[index]->getImages()) {
+        if (img->getFileName() == filename) {
+            return img;
+        }
+    }
+    return nullptr;
+}
 
+std::vector<Image*> System::getCurrentSessionImages() const {
+    if (activeSessionID == -1) return {};
+    
+    int index = findSession();
+    if (index == -1) return {};
+    
+    return sessions[index]->getImages();
+}
 void System::help(std::ostream& out) const {
     out << "Available commands:\n"
         << "  load <file1> [file2...] - Load files into new session\n"
@@ -198,3 +219,12 @@ void System::closeSession() {
 void System::exitProgram() {running = false;}
 
 bool System::isRunning() const {return running;} 
+
+Session* System::getCurrentSession() {
+    if (activeSessionID == -1) return nullptr;
+    
+    int index = findSession();
+    if (index == -1) return nullptr;
+    
+    return sessions[index];
+}
