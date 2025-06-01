@@ -35,26 +35,22 @@ int main() {
         
         if(command == "grayscale") {
             transformation = new Grayscale();
-            transformation->apply(system);
-            delete transformation;
+            system.queueTransformation(transformation);
         }
         else if(command == "monochrome") {
             transformation = new Monochrome();
-            transformation->apply(system);
-            delete transformation;
+            system.queueTransformation(transformation);
         }
         else if(command == "negative") {
             transformation = new Negative();
-            transformation->apply(system);
-            delete transformation;
+            system.queueTransformation(transformation);
         }
         else if(command == "rotate") {
             if (!args.empty()) {
         try {
             Rotate::Direction dir = (args == "left") ? Rotate::left : Rotate::right;
             transformation = new Rotate(dir);
-            transformation->apply(system);
-            delete transformation;
+            system.queueTransformation(transformation);
         } catch (const std::exception& e) {
             std::cerr << "Rotation error: " << e.what() << "\n";
         }
@@ -74,7 +70,9 @@ int main() {
             }
         }
         else if(command == "save") {
-            Commands* cmd = new Save();
+            Session* session = system.getCurrentSession();
+            session->applyTransformations(system);
+            Commands *cmd = new Save();
             cmd->apply(system);
             delete cmd;
         }
@@ -178,7 +176,7 @@ int main() {
             }
             else
             {
-                std::cerr << "Error: collage command requires 4 arguments - <direction> <image1> <image2> <outimage>\n";
+                std::cerr << "Error: collage command requires 4 arguments - <image1> <image2> <direction>  <outimage>\n";
             }
         }
         else

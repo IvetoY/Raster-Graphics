@@ -53,6 +53,8 @@ void System::saveSession() {
         throw std::runtime_error("Current session not found!");
     }
 
+    sessions[index]->applyTransformations(*this);
+
     std::vector<Image*> sessionImages = sessions[index]->getImages();
     if (sessionImages.empty()) {
         throw std::runtime_error("No images to save in current session!");
@@ -152,6 +154,7 @@ void System::help(std::ostream& out) const {
         << "  saveas <filename>      - Save current session with new name\n"
         << "  add <filename>         - Add image to current session\n"
         << "  session info           - Show current session info\n"
+        << "  collage <img1> <img2> <horizontal|vertical> <output> - Create collage\n"
         << "  close                  - Close current session\n"
         << "  exit                   - Exit the program\n"
         << "  help                   - Show this help message\n\n"
@@ -160,12 +163,20 @@ void System::help(std::ostream& out) const {
         << "  monochrome             - Convert images to black and white\n"
         << "  negative               - Invert image colors\n"
         << "  rotate <left|right>    - Rotate images 90 degrees\n";
+        
 }
 
 void System::undo() {
     int currentIdx = findSession();
     if (currentIdx != -1) {
-        sessions[currentIdx]->undo();
+        try {
+            sessions[currentIdx]->undo();
+            std::cout << "Undo successful. " 
+                      << sessions[currentIdx]->getImages().size() 
+                      << " images in session." << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Undo failed: " << e.what() << std::endl;
+        }
     }
 }
 void System::addImageToSession(const std::string& fileName) {

@@ -6,15 +6,17 @@
 #include <utility>
 #include <stack>
 #include "../Image/ImageFactory.h"
+#include "../System/System.h"
 class Image;
 class Session{
 private:
-
+std::vector<Image*> deepCopy(const std::vector<Image*>& source) const;
 int id ;
 static int nextId;
 std::vector<Image*> images;
-std::vector<Transformations*> transformations;
+std::vector<Transformations*> pendingTransformations;
 std::vector<std::vector<Image*>> history;
+std::vector<std::vector<Transformations*>> transformationsHistory;
 bool active = true;
 ImageFactory* imageFactory;
 std::vector<Image*> cloneImages(const std::vector<Image*>& source);
@@ -24,18 +26,22 @@ void clearHistory();
 public:
     Session();
     ~Session() ;
+    void saveState();
     Session(ImageFactory* factory);
     void addImage(Image* image);
     void loadImage(const std::string& filename);
     void closeImage();
     std::vector<Image*> getImages() const;
     
+    std::vector<Transformations*> cloneTransformations(
+    const std::vector<Transformations*>& source);
 
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;
 
     void queueTransformation(Transformations* transformation);
-    void applyTransformations();
+    void applyTransformations(System& system);
+    bool hasPendingTransformations() const;
     void undo();
 
     void save(const std::string& filename) const;
