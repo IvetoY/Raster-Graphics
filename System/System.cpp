@@ -1,6 +1,7 @@
 #include "System.h"
 #include "../Session/Session.h"
 #include <algorithm>
+#include "../Transformations/Collage.h"
 #include <cstring>
 #include "../Image/ImageFactory.h"
 System* System::instance = nullptr;
@@ -151,10 +152,9 @@ void System::help(std::ostream& out) const {
         << "  switch <id>            - Switch to session with given ID\n"
         << "  undo                   - Undo last operation in current session\n"
         << "  save                   - Save current session\n"
-        << "  saveas <filename>      - Save current session with new name\n"
+        << "  saveas <filename>      - Save with new name\n"
         << "  add <filename>         - Add image to current session\n"
         << "  session info           - Show current session info\n"
-        << "  collage <img1> <img2> <horizontal|vertical> <output> - Create collage\n"
         << "  close                  - Close current session\n"
         << "  exit                   - Exit the program\n"
         << "  help                   - Show this help message\n\n"
@@ -162,7 +162,8 @@ void System::help(std::ostream& out) const {
         << "  grayscale              - Convert images to grayscale\n"
         << "  monochrome             - Convert images to black and white\n"
         << "  negative               - Invert image colors\n"
-        << "  rotate <left|right>    - Rotate images 90 degrees\n";
+        << "  rotate <left|right>    - Rotate images 90 degrees\n"
+        << "  collage <img1> <img2> <horizontal|vertical> <output> - Create collage\n";
         
 }
 
@@ -179,6 +180,15 @@ void System::undo() {
         }
     }
 }
+
+void System::executeCollage(const std::string& secondImgPath, 
+                           Direction direction,
+                           const std::string& outputPath) {
+    Image* secondImg = ImageFactory::create(secondImgPath);
+    Transformations* collage = new Collage(secondImg, direction, outputPath);
+    queueTransformation(collage);
+}
+
 void System::addImageToSession(const std::string& fileName) {
     int currentIdx = findSession();
     Image* newImage = ImageFactory::create(fileName);
