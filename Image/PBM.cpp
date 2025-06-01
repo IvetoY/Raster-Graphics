@@ -178,7 +178,14 @@ void PBM::rotateRight(){
     pixels = rotated;
     std::swap(width, height);
 }
-PBM* PBM::clone() const{return new PBM(*this);}
+PBM* PBM::clone() const {
+    Pixel** newPixels = new Pixel*[height];
+    for(unsigned y = 0; y < height; ++y) {
+        newPixels[y] = new Pixel[width];
+        std::copy(pixels[y], pixels[y] + width, newPixels[y]);
+    }
+    return new PBM(width, height, maxColourNumbers, magicNumber, fileName, std::move(newPixels), format);
+}
 void PBM::free(){
     if (pixels != nullptr) {
         for (unsigned y = 0; y < height; ++y) {

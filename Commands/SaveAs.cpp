@@ -5,14 +5,20 @@ SaveAs::SaveAs(const std::string& _newFileName)
     : newFileName(_newFileName) {}
 
 void SaveAs::apply(System& system) const {
-    if (system.getCurrentSession() == nullptr) {
+    Session* session = system.getCurrentSession();
+    if (!session) {
         throw std::runtime_error("No active session");
     }
 
-    std::vector<Image*> images = system.getCurrentSession()->getImages();
+    // 1. Прилагаме всички pending трансформации
+    session->applyTransformations(system);
+
+    std::vector<Image*> images = session->getImages();
     if (images.empty()) {
         throw std::runtime_error("No images to save");
     }
+
+    // 2. Обработка на името на файла
     size_t dotPos = newFileName.find_last_of(".");
     std::string stem = newFileName;
     std::string extension = "";
@@ -21,7 +27,9 @@ void SaveAs::apply(System& system) const {
         stem = newFileName.substr(0, dotPos);
         extension = newFileName.substr(dotPos);
     }
-     for (size_t i = 0; i < images.size(); ++i) {
+
+    // 3. Запазване на изображенията
+    for (size_t i = 0; i < images.size(); ++i) {
         std::string numberedFilename;
         if (images.size() > 1) {
             std::ostringstream oss;
@@ -38,9 +46,10 @@ void SaveAs::apply(System& system) const {
             } else {
                 images[i]->saveBinary(numberedFilename);
             }
-            std::cout << "Saved to: " << numberedFilename << std::endl;
+            std::cout << "Successfully saved as: " << numberedFilename << std::endl;
         } catch (const std::exception& e) {
-            std::cerr << "Failed to save " << numberedFilename << ": " << e.what() << std::endl;
+            std::cerr << "Error saving " << numberedFilename << ": " << e.what() << std::endl;
+            throw; // Прехвърляме грешката нагоре
         }
     }
 }

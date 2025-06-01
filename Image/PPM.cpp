@@ -63,7 +63,14 @@ PPM::~PPM(){free();}
 PPM::PPM(const PPM& other) : Image(other), format(other.format) {copy(other);}
 PPM::PPM(PPM&& other) noexcept : Image(std::move(other)){move(std::move(other));}
 
-PPM* PPM::clone() const {return new PPM(*this);}
+PPM* PPM::clone() const {
+    Pixel** newPixels = new Pixel*[height];
+    for(unsigned y = 0; y < height; ++y) {
+        newPixels[y] = new Pixel[width];
+        std::copy(pixels[y], pixels[y] + width, newPixels[y]);
+    }
+    return new PPM(width, height, maxColourNumbers, magicNumber, fileName, std::move(newPixels), format);
+}
 
 void PPM::grayscale() {
     for (unsigned y = 0; y < height; ++y){
@@ -259,13 +266,24 @@ void PPM::move(PPM&& other) noexcept {
 }
 
 void PPM::copy(const PPM& other) {
+    if (this == &other) {return;}
     width = other.width;
     height = other.height;
     maxColourNumbers = other.maxColourNumbers;
     magicNumber = other.magicNumber;
     fileName = other.fileName;
     format = other.format;
-    pixels = other.pixels; 
+    
+    if(other.pixels){
+        pixels = new Pixel*[height];
+        for(unsigned y = 0; y < height; ++y){
+            pixels[y] = new Pixel[width];
+            std::copy(other.pixels[y], other.pixels[y] + width, pixels[y]);
+        }
+    }
+    else{
+        pixels = nullptr;
+    }
 } 
 
 void PPM::loadASCII(const std::string& filePath) {

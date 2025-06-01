@@ -184,7 +184,15 @@ void PGM::rotateRight(){
     std::swap(width, height);
 }
 
-PGM* PGM::clone() const{return new PGM(*this);}
+PGM* PGM::clone() const {
+    Pixel** newPixels = new Pixel*[height];
+    for(unsigned y = 0; y < height; ++y) {
+        newPixels[y] = new Pixel[width];
+        std::copy(pixels[y], pixels[y] + width, newPixels[y]);
+    }
+    return new PGM(width, height, maxColourNumbers, magicNumber, fileName, std::move(newPixels), format);
+}
+
 void PGM::free(){
     if (pixels != nullptr){
         for(unsigned y = 0; y < height; ++y){
@@ -212,13 +220,24 @@ void PGM::move(PGM&& other){
     other.fileName = "";  
 }
 void PGM::copy(const PGM& other) {
+    if (this == &other) {return;}
     width = other.width;
     height = other.height;
     maxColourNumbers = other.maxColourNumbers;
     magicNumber = other.magicNumber;
     fileName = other.fileName;
     format = other.format;
-    pixels = other.pixels; 
+    
+    if(other.pixels){
+        pixels = new Pixel*[height];
+        for(unsigned y = 0; y < height; ++y){
+            pixels[y] = new Pixel[width];
+            std::copy(other.pixels[y], other.pixels[y] + width, pixels[y]);
+        }
+    }
+    else{
+        pixels = nullptr;
+    }
 } 
 
 void PGM::loadASCII(const std::string& filePath) {
