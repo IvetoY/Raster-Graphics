@@ -1,24 +1,19 @@
 #include "SaveAs.h"
 #include "../System/System.h"
 #include <sstream>
+#include <iostream>
 SaveAs::SaveAs(const std::string& _newFileName) 
     : newFileName(_newFileName) {}
 
 void SaveAs::apply(System& system) const {
     Session* session = system.getCurrentSession();
-    if (!session) {
-        throw std::runtime_error("No active session");
-    }
-
-    // 1. Прилагаме всички pending трансформации
+    if (!session) {throw std::runtime_error("No active session");}
+    
     session->applyTransformations(system);
 
     std::vector<Image*> images = session->getImages();
-    if (images.empty()) {
-        throw std::runtime_error("No images to save");
-    }
+    if (images.empty()) {throw std::runtime_error("No images to save");}
 
-    // 2. Обработка на името на файла
     size_t dotPos = newFileName.find_last_of(".");
     std::string stem = newFileName;
     std::string extension = "";
@@ -28,7 +23,6 @@ void SaveAs::apply(System& system) const {
         extension = newFileName.substr(dotPos);
     }
 
-    // 3. Запазване на изображенията
     for (size_t i = 0; i < images.size(); ++i) {
         std::string numberedFilename;
         if (images.size() > 1) {
@@ -49,7 +43,7 @@ void SaveAs::apply(System& system) const {
             std::cout << "Successfully saved as: " << numberedFilename << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "Error saving " << numberedFilename << ": " << e.what() << std::endl;
-            throw; // Прехвърляме грешката нагоре
+            throw;
         }
     }
 }

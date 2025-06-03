@@ -4,6 +4,8 @@
 #include "../Transformations/Collage.h"
 #include <cstring>
 #include "../Image/ImageFactory.h"
+#include <iostream>
+#include "../Transformations/Collage.h"
 System* System::instance = nullptr;
 System& System::getInstance(){
     static System system;
@@ -25,7 +27,7 @@ int System::createNewSession() {
     if (activeSessionID == -1) {
         activeSessionID = newSession->getId();
     }
-    
+    std::cout<<"Successfully created new session with id "<<newSession->getId()<<std::endl;
     return newSession->getId();
 }
 void System::queueTransformation(Transformations* transformation) {
@@ -104,48 +106,20 @@ void System::printSessionInfo() const {
     std::cout << "=========================\n";
 }
 void System::loadSession(const std::string& file) {
-    
-    int newSessionId = createNewSession();
-    Session* newSession = sessions.back();
-        Image* img = nullptr;
-        img = ImageFactory::create(file); 
-        
-        newSession->addImage(img);
-        activeSessionID = newSessionId;
-    
-
-    }
+    loadSession(std::vector<std::string>{file});    
+}
 void System::loadSession(const std::vector<std::string>& files) {
         int newSessionId = createNewSession();
+        Session* newSession = sessions.back();
         for (const auto& file : files) {
-            Image* img = nullptr;
-            img = ImageFactory::create(file); 
-            sessions[newSessionId]->addImage(img);
+            Image* img = ImageFactory::create(file); 
+            newSession->addImage(img);
+            std::cout << "Loaded: " << file << std::endl;
         }
         activeSessionID = newSessionId;
-    }
-Image* System::findImageInCurrentSession(const std::string& filename) const {
-    if (activeSessionID == -1) return nullptr;
-    
-    int index = findSession();
-    if (index == -1) return nullptr;
-    
-    for (Image* img : sessions[index]->getImages()) {
-        if (img->getFileName() == filename) {
-            return img;
-        }
-    }
-    return nullptr;
 }
 
-std::vector<Image*> System::getCurrentSessionImages() const {
-    if (activeSessionID == -1) return {};
-    
-    int index = findSession();
-    if (index == -1) return {};
-    
-    return sessions[index]->getImages();
-}
+
 void System::help(std::ostream& out) const {
     out << "Available commands:\n"
         << "  load <file1> [file2...] - Load files into new session\n"
@@ -185,8 +159,16 @@ void System::executeCollage(const std::string& secondImgPath,
                            Direction direction,
                            const std::string& outputPath) {
     Image* secondImg = ImageFactory::create(secondImgPath);
+    int id = findSession();
+    Image* firstImg = sessions[id]->getImages().back();
+    
+    if (firstImg->getMagicNumber() != secondImg->getMagicNumber()) {
+        delete secondImg;
+        throw std::runtime_error("Must be the same format as first image!");
+    }
     Transformations* collage = new Collage(secondImg, direction, outputPath);
-    queueTransformation(collage);
+    this->queueTransformation(collage);
+    std::cout<<"New collage adde to pending transformations."<<std::endl;
 }
 
 void System::addImageToSession(const std::string& fileName) {
@@ -194,6 +176,7 @@ void System::addImageToSession(const std::string& fileName) {
     Image* newImage = ImageFactory::create(fileName);
     if (currentIdx != -1) {
         sessions[currentIdx]->addImage(newImage);
+        std::cout<<"Successfully added image "<<newImage->getFileName()<<std::endl; 
     } else {
         throw std::runtime_error("No active session to add image to");
     }

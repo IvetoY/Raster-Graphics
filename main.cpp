@@ -9,7 +9,7 @@
 #include "Commands/SessionInfo.h"
 #include "Commands/Switch.h"
 #include "Commands/Undo.h"
-#include "Commands/Collage.h"
+#include "Transformations/Collage.h"
 #include "Transformations/Grayscale.h"
 #include "Transformations/Monochrome.h"
 #include "Transformations/Negative.h"
@@ -61,7 +61,15 @@ int main() {
         }
         else if(command == "load") {
             if(!args.empty()) {
-                Commands* cmd = new Load(args);
+                std::vector<std::string> argsList;
+                std::istringstream iss(args);
+                std::string arg;
+
+            while (iss >> arg)
+            {
+                argsList.push_back(arg);
+            }
+                Commands* cmd = new Load(argsList);
                 cmd->apply(system);
                 delete cmd;
             } 
@@ -161,13 +169,8 @@ int main() {
                     {
                         throw std::invalid_argument("Invalid direction. Use 'horizontal' or 'vertical'");
                     }
-
-                    Image *img1 = system.findImageInCurrentSession(argsList[0]);
-                    Image *img2 = system.findImageInCurrentSession(argsList[1]);
-
-                    Commands *cmd = new Collage(img1, img2, dir, argsList[3]);
-                    cmd->apply(system);
-                    delete cmd;
+                    
+                    system.executeCollage(argsList[1], dir, argsList[3]);
                 }
                 catch (const std::exception &e)
                 {

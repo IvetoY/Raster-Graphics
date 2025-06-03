@@ -71,7 +71,7 @@ Image* PGM::collage(const Image* second, const std::string& newFileName, Directi
 Image* PGM::collageWithPBM(const PBM* second, const std::string& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
 Image* PGM::collageWithPPM(const PPM* second, const std::string& newFileName, Direction d) const {throw std::logic_error("Can't collage different types!");}
 Image* PGM::collageWithPGM(const PGM* second, const std::string& newFileName, Direction d) const {
-    if (!second) throw std::invalid_argument("Null image provided");
+    if(!second){throw std::invalid_argument("Null image provided");}
     
     unsigned newWidth = width, newHeight = height;
     if(d == Direction::HORIZONTAL){
@@ -84,29 +84,33 @@ Image* PGM::collageWithPGM(const PGM* second, const std::string& newFileName, Di
     }
     
     Pixel** newPixels = new Pixel*[newHeight];
-    for(unsigned y = 0; y < newHeight; ++y){
-        newPixels[y] = new Pixel[newWidth]();  
-        if (d == Direction::HORIZONTAL){
-            if (y < height){
-                for(unsigned x = 0; x < width; ++x){
-                    newPixels[y][x] = pixels[y][x];
-                }
+    for(unsigned y = 0; y < newHeight; ++y) {
+        newPixels[y] = new Pixel[newWidth]();
+    }
+    for(unsigned y = 0; y < height; ++y){
+        for(unsigned x = 0; x < width; ++x){
+            if(d == Direction::HORIZONTAL){
+                newPixels[y][x] = pixels[y][x];
+            } 
+            else{
+                newPixels[y][x] = pixels[y][x];
             }
-            if (y < second->height){
-                for(unsigned x = 0; x < second->width; ++x){
-                    newPixels[y][width + x] = second->pixels[y][x];
+        }
+    }
+    for(unsigned y = 0; y < second->height; ++y){
+        for(unsigned x = 0; x < second->width; ++x){
+            if(d == Direction::HORIZONTAL){
+                unsigned ny = y;
+                unsigned nx = width + x;
+                if(ny < newHeight && nx < newWidth){
+                    newPixels[ny][nx] = second->pixels[y][x];
                 }
-            }
-        } 
-        else {
-            if(y < height){
-                for(unsigned x = 0; x < width; ++x){
-                    newPixels[y][x] = pixels[y][x];
-                }
-            }
-            else if (y - height < second->height){
-                for(unsigned x = 0; x < second->width; ++x){
-                    newPixels[y][x] = second->pixels[y - height][x];
+            } 
+            else{
+                unsigned ny = height + y;
+                unsigned nx = x;
+                if(ny < newHeight && nx < newWidth){
+                    newPixels[ny][nx] = second->pixels[y][x];
                 }
             }
         }

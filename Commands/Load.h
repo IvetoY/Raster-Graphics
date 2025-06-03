@@ -1,18 +1,16 @@
 #pragma once
-#include "../Structures/String/String.h"
-#include <vector>
 #include "Commands.h"
 #include "../System/System.h"
 #include <string>
+#include <vector>
 class Load: public Commands{
     private:
-    std::string file;
+    std::vector<std::string> files;
     public:
     ~Load() override = default;
-    Load(const std::string& files);
-	Load(std::string&& files);
+    Load(const std::vector<std::string>& files);
     Commands* clone() const override;
     void apply(System& system) const override;
-    String getCommandName() const override{return "load";}
-    String getCommandDescription() const override {return "Loads an image from file";}
+    std::string getCommandName() const override{return "load";}
+    std::string getCommandDescription() const override {return "Loads an image from file";}
 };

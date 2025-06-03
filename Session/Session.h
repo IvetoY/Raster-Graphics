@@ -10,7 +10,6 @@
 class Image;
 class Session{
 private:
-std::vector<Image*> deepCopy(const std::vector<Image*>& source) const;
 int id ;
 static int nextId;
 std::vector<Image*> images;
@@ -27,7 +26,6 @@ public:
     Session();
     ~Session() ;
     void saveState();
-    Session(ImageFactory* factory);
     void addImage(Image* image);
     void loadImage(const std::string& filename);
     void closeImage();

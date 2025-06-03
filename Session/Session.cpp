@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <filesystem>
+#include <iostream>
 int Session::nextId = 1;
 
 Session::Session() : id(nextId++), active(true) {}
@@ -26,13 +27,7 @@ void Session::clearTransformations() {
     }
     pendingTransformations.clear();
 }
-std::vector<Image*> Session::deepCopy(const std::vector<Image*>& source) const {
-    std::vector<Image*> copies;
-    for (const auto& img : source) {
-        copies.push_back(img ? img->clone() : nullptr);
-    }
-    return copies;
-}
+
 void Session::clearHistory() {
     for (auto& entry : history) {
         for (Image* img : entry) delete img;
@@ -108,7 +103,7 @@ void Session::applyTransformations(System& system) {
             transformation->apply(system);
         }
     }
-    //pendingTransformations.clear();
+    pendingTransformations.clear();
 }
 bool Session::hasPendingTransformations() const {
     return !pendingTransformations.empty();
@@ -138,6 +133,7 @@ void Session::save(const std::string& filename) const {
             img->saveBinary(img->getFileName());
         }
     }
+
 }
 
 void Session::saveFirstFileAs(const std::string& newFileName) const {

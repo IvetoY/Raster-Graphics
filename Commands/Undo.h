@@ -7,6 +7,6 @@ public:
     void apply(System& system) const override;
     Commands* clone() const override;
     Undo() = default;
-    String getCommandName() const override {return "undo";}
-    String getCommandDescription() const override {return "Undoes the last command";}
+    std::string getCommandName() const override {return "undo";}
+    std::string getCommandDescription() const override {return "Undoes the last command";}
 };

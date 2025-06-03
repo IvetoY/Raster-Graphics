@@ -27,14 +27,15 @@ Image::Image(Image&& other) noexcept
       fileName(std::move(other.fileName)) {
 }
 Image::Image(unsigned w, unsigned h) :width(w), height(h) {}
+
 const std::string& Image::getFileName() const {return fileName;}
 
 void Image::setFileName(const std::string& newFileName){
-	const char* ext = extractFileExtension(newFileName.c_str());
+const char* ext = extractFileExtension(newFileName.c_str());
 
-	if (strcmp(ext, getFileExtension()) != 0 || strlen(ext) != 4)
+if (strcmp(ext, getFileExtension()) != 0 || strlen(ext) != 4){
 		throw std::runtime_error("Invalid file name!\n");
-
+}
 	fileName = newFileName;
 }
 

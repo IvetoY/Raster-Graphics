@@ -10,7 +10,7 @@
                 "${workspaceFolder}/Pixel",
                 "${workspaceFolder}/Transformations",
                 "${workspaceFolder}/Utils",
-                "${workspaceFolder}/Structures"
+                "C:/Users/Iva*Desktop/Raster-Graphics/Raster-Graphics/vcpkg/versions/g-/gtest.json"
             ],
             "defines": [],
             "windowsSdkVersion": "10.0.19041.0",

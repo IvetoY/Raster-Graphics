@@ -5,6 +5,6 @@ class Exit : public Commands{
 public:
     void apply(System& system) const  override;
     Commands* clone() const override;
-    String getCommandName() const override {return "exit";}
-    String getCommandDescription() const override {return "Exits the program";}
+    std::string getCommandName() const override {return "exit";}
+    std::string getCommandDescription() const override {return "Exits the program";}
 };

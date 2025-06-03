@@ -9,8 +9,12 @@ void Switch::apply(System& system) const{
 Switch::Switch(const std::string& idStr) {
         try {
             switchTo= std::stoi(idStr);
-        } catch (...) {
-            throw std::invalid_argument("Invalid session ID");
+        }
+        catch (const std::invalid_argument &){
+            throw std::invalid_argument("Invalid session ID: not a number");
+        }
+        catch (const std::out_of_range &){
+            throw std::invalid_argument("Invalid session ID: number out of range");
         }
     }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "Commands.h"
 #include "../System/System.h"
-#include "../Structures/String/String.h"
+#include <string>
 class Save: public Commands{
     private:
     std::string filename;
@@ -9,6 +9,6 @@ class Save: public Commands{
     Save();
     Commands* clone() const override;
     void apply(System& system)const override;
-    String getCommandName() const override {return "save";}
-    String getCommandDescription() const override {return "Saves image to file";}
+    std::string getCommandName() const override {return "save";}
+    std::string getCommandDescription() const override {return "Saves image to file";}
 };

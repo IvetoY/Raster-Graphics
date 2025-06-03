@@ -1,8 +1,9 @@
 #pragma once
 #include <vector>
 #include <cstring>
-#include "../Structures/String/String.h"
+#include <string>
 #include "../Session/Session.h"
+#include "../Transformations/Collage.h"
 class Session;
 class Transformations;
 class System{
@@ -19,9 +20,7 @@ Session* getCurrentSession();
 	int findSession() const;
 	static System& getInstance();
 	~System();
-
-	Image* findImageInCurrentSession(const std::string& filename) const;
-    std::vector<Image*> getCurrentSessionImages() const;
+    
 	std::vector<Image*>& getImages() { return images; }
     const std::vector<Image*>& getImages() const { return images; }
 
@@ -29,7 +28,10 @@ Session* getCurrentSession();
     const std::vector<Session*>& getSessions() const { return sessions; }
 
 	int getActiveSessionId() {return activeSessionID;}
-	
+	void executeCollage(const std::string& secondImgPath, 
+                           Direction direction,
+                           const std::string& outputPath);
+
 	System(const System&) = delete;
 	System& operator=(const System&) = delete;
 	

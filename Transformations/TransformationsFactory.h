@@ -1,6 +1,6 @@
 #pragma once
 #include "Transformations.h"
-#include "../Structures/String/String.h"
+#include <string>
 #include "Grayscale.h"
 #include "Monochrome.h"
 #include "Rotate.h"
@@ -9,7 +9,7 @@
 
 class TransformationsFactory{
 public:
-static Transformations* create(const String& name){
+static Transformations* create(const std::string& name){
     if(name == "grayscale") {return new Grayscale();}
     if(name == "monochrome") {return new Monochrome();}
     if(name == "rotate_left") {return new Rotate(Rotate::left);}

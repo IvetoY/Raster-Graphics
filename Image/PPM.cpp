@@ -216,31 +216,47 @@ Image* PPM::collageWithPBM(const PBM* second, const std::string& newFileName, Di
 Image* PPM::collageWithPGM(const PGM* second, const std::string& newFileName, Direction d) const{throw std::logic_error("Can't collage different types!");}
 
 Image* PPM::collageWithPPM(const PPM* second, const std::string& newFileName, Direction d) const{
-    if(!second){return nullptr;}
-    if (strcmp(extractFileExtension(newFileName.c_str()), getFileExtension()) != 0){throw std::runtime_error("Invalid new file name for collage! Must be .ppm!");}
-    if (format != second->format){throw std::runtime_error("Cannot collage PPM images with different formats");}
-
-    size_t newWidth = d == Direction::HORIZONTAL ? width + second->width : std::max(width, second->width);
-    size_t newHeight = d == Direction::HORIZONTAL ? std::max(height, second->height) : height + second->height;
-
-    Pixel** newPixels = new Pixel*[newHeight];
-
-    for (unsigned y = 0; y < height; ++y){
-        for (unsigned x = 0; x < width; ++x) {
-            newPixels[y][x] = pixels[y][x];
-        }
-    }
+    if(!second){throw std::invalid_argument("Null image provided");}
+    
+    unsigned newWidth = width, newHeight = height;
     if(d == Direction::HORIZONTAL){
-        for (unsigned y = 0; y < second->getHeight(); ++y){
-            for (unsigned x = 0; x < second->getWidth(); ++x){
-                newPixels[y][x + width] = second->pixels[y][x];
+        newWidth += second->width;
+        newHeight = std::max(height, second->height);
+    } 
+    else{
+        newHeight += second->height;
+        newWidth = std::max(width, second->width);
+    }
+    
+    Pixel** newPixels = new Pixel*[newHeight];
+    for(unsigned y = 0; y < newHeight; ++y) {
+        newPixels[y] = new Pixel[newWidth]();
+    }
+    for(unsigned y = 0; y < height; ++y){
+        for(unsigned x = 0; x < width; ++x){
+            if(d == Direction::HORIZONTAL){
+                newPixels[y][x] = pixels[y][x];
+            } 
+            else{
+                newPixels[y][x] = pixels[y][x];
             }
         }
     }
-    else{
-        for(unsigned y = 0; y < second->getHeight(); ++y){
-            for(unsigned x = 0; x < second->getWidth(); ++x){
-                newPixels[y + height][x] = second->pixels[y][x];
+    for(unsigned y = 0; y < second->height; ++y){
+        for(unsigned x = 0; x < second->width; ++x){
+            if(d == Direction::HORIZONTAL){
+                unsigned ny = y;
+                unsigned nx = width + x;
+                if(ny < newHeight && nx < newWidth){
+                    newPixels[ny][nx] = second->pixels[y][x];
+                }
+            } 
+            else{
+                unsigned ny = height + y;
+                unsigned nx = x;
+                if(ny < newHeight && nx < newWidth){
+                    newPixels[ny][nx] = second->pixels[y][x];
+                }
             }
         }
     }

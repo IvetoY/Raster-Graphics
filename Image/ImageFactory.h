@@ -3,7 +3,7 @@
 #include "PBM.h"
 #include "PGM.h"
 #include "PPM.h"
-#include "../Structures/String/String.h"
+#include <string>
 #include <fstream>
 #include <cstring>
 class ImageFactory{

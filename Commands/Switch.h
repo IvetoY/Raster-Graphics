@@ -8,6 +8,6 @@ public:
     explicit Switch(const std::string& idStr);
     void apply(System& system) const override;
     Commands* clone() const override;
-    String getCommandName() const override {return "switch";}
-    String getCommandDescription() const override {return "Switches active image";}
+    std::string getCommandName() const override {return "switch";}
+    std::string getCommandDescription() const override {return "";}
 };
